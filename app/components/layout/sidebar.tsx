@@ -1,9 +1,13 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/app/components/layout/nav-items";
 import { Avatar } from "@/app/components/ui/avatar";
 import { LogoutIcon, PlusIcon, SunIcon } from "@/app/components/icons";
 import { ROOM, USER } from "@/app/lib/data";
 
 export function Sidebar() {
+  const pathname = usePathname();
   return (
     <aside className="sticky top-0 hidden h-screen w-[248px] flex-none flex-col border-r border-borde bg-tarjeta px-4 py-6 lg:flex">
       <a href="#" className="flex items-center gap-2.5 px-2 pb-[22px] pt-1">
@@ -27,9 +31,10 @@ export function Sidebar() {
       </a>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.map((item, index) => {
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const active = index === 0;
+          const active =
+            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <a
               key={item.label}

@@ -1,11 +1,16 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/app/components/layout/nav-items";
 
 export function BottomNav() {
+  const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-borde bg-tarjeta lg:hidden">
-      {NAV_ITEMS.map((item, index) => {
+      {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
-        const active = index === 0;
+        const active =
+          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return (
           <a
             key={item.label}

@@ -25,6 +25,16 @@
   --color-foto-borde: #dbcdba;
   --color-foto-fondo: #f4ece1;
   --color-foto-texto: #b0a290;
+  --color-alerta: #fbdad6;
+  --color-alerta-icono: #f4a8a0;
+  --color-alerta-texto: #c5413a;
+  --color-alerta-suave: #b25249;
+  --color-etiqueta-coral: #fbd8cc;
+  --color-etiqueta-coral-texto: #d9684a;
+  --color-etiqueta-rosa: #f9d2de;
+  --color-etiqueta-rosa-texto: #c56486;
+  --color-etiqueta-amarilla: #f7e7a6;
+  --color-etiqueta-amarilla-texto: #9a7b1e;
   --font-sans: var(--font-nunito);
   --font-display: var(--font-fredoka);
 }

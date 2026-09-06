@@ -35,6 +35,11 @@
   --color-etiqueta-rosa-texto: #c56486;
   --color-etiqueta-amarilla: #f7e7a6;
   --color-etiqueta-amarilla-texto: #9a7b1e;
+  --color-crema-suave: #fbf4ec;
+  --color-borde-input: #eadfd0;
+  --color-verde-check: #5fb97e;
+  --color-marfil: #fbf1d6;
+  --color-marron-invitacion: #8a7234;
   --font-sans: var(--font-nunito);
   --font-display: var(--font-fredoka);
 }

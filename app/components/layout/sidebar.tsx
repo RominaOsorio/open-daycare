@@ -63,7 +63,7 @@ export function Sidebar() {
             <div className="text-xs text-gris">{USER.role}</div>
           </div>
           <a
-            href="#"
+            href="/login"
             title="Cerrar sesión"
             className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-crema text-gris-oscuro"
           >

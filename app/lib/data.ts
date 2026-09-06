@@ -1,4 +1,13 @@
-export type PostType = "logro" | "actividad" | "anuncio";
+import type { Kid } from "@/app/lib/kids";
+
+export type PostType =
+  | "logro"
+  | "actividad"
+  | "anuncio"
+  | "comida"
+  | "siesta"
+  | "animo"
+  | "foto";
 
 export interface Author {
   name: string;
@@ -18,6 +27,24 @@ export interface Post {
   photo?: { label: string };
   likes: number;
   comments: number;
+}
+
+export function nowTime(): string {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+export function audienceLabel(kids: Kid[], wholeRoom: boolean): string {
+  if (wholeRoom) return "toda la sala";
+  const names = kids.map((kid) => kid.name.split(" ")[0]);
+  if (names.length === 1) return `familia de ${names[0]}`;
+  if (names.length === 2) return `familia de ${names[0]} y ${names[1]}`;
+  if (names.length > 2) {
+    return `familia de ${names.slice(0, -1).join(", ")} y ${names[names.length - 1]}`;
+  }
+  return "";
 }
 
 export const ROOM = {

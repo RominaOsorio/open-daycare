@@ -1,12 +1,18 @@
+"use client";
+
 import { Avatar } from "@/app/components/ui/avatar";
 import { CameraIcon } from "@/app/components/icons";
+import { useCreatePost } from "@/app/components/feed/create-post-provider";
 import { USER } from "@/app/lib/data";
 
 export function ComposerCard() {
+  const { openModal } = useCreatePost();
+
   return (
-    <a
-      href="#"
-      className="mb-6 flex items-center gap-3.5 rounded-[18px] border border-borde bg-tarjeta px-[18px] py-3.5 shadow-[0_4px_14px_-10px_rgba(120,90,60,.4)]"
+    <button
+      type="button"
+      onClick={openModal}
+      className="mb-6 flex w-full items-center gap-3.5 rounded-[18px] border border-borde bg-tarjeta px-[18px] py-3.5 text-left shadow-[0_4px_14px_-10px_rgba(120,90,60,.4)]"
     >
       <Avatar
         author={{ name: USER.name, initial: USER.initial, avatarBg: USER.avatarBg, avatarColor: USER.avatarColor }}
@@ -18,6 +24,6 @@ export function ComposerCard() {
       <span className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-coral-claro text-naranja">
         <CameraIcon className="h-[19px] w-[19px]" />
       </span>
-    </a>
+    </button>
   );
 }

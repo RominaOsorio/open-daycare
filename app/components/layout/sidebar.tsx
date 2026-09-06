@@ -4,10 +4,12 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/app/components/layout/nav-items";
 import { Avatar } from "@/app/components/ui/avatar";
 import { LogoutIcon, PlusIcon, SunIcon } from "@/app/components/icons";
+import { useCreatePost } from "@/app/components/feed/create-post-provider";
 import { ROOM, USER } from "@/app/lib/data";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { openModal } = useCreatePost();
   return (
     <aside className="sticky top-0 hidden h-screen w-[248px] flex-none flex-col border-r border-borde bg-tarjeta px-4 py-6 lg:flex">
       <a href="#" className="flex items-center gap-2.5 px-2 pb-[22px] pt-1">
@@ -22,13 +24,14 @@ export function Sidebar() {
         </div>
       </a>
 
-      <a
-        href="#"
+      <button
+        type="button"
+        onClick={openModal}
         className="mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-b from-[#F4977E] to-[#EE8164] py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,.75)]"
       >
         <PlusIcon className="h-[17px] w-[17px]" />
         Nueva publicación
-      </a>
+      </button>
 
       <nav className="flex flex-1 flex-col gap-1">
         {NAV_ITEMS.map((item) => {

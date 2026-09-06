@@ -22,6 +22,30 @@ const TYPES: Record<
     dot: "bg-azul",
     text: "text-azul",
   },
+  comida: {
+    label: "COMIDA",
+    badge: "bg-etiqueta-amarilla",
+    dot: "bg-etiqueta-amarilla-texto",
+    text: "text-etiqueta-amarilla-texto",
+  },
+  siesta: {
+    label: "SIESTA",
+    badge: "bg-violeta-claro",
+    dot: "bg-violeta",
+    text: "text-violeta",
+  },
+  animo: {
+    label: "ÁNIMO",
+    badge: "bg-etiqueta-rosa",
+    dot: "bg-etiqueta-rosa-texto",
+    text: "text-etiqueta-rosa-texto",
+  },
+  foto: {
+    label: "FOTO",
+    badge: "bg-etiqueta-coral",
+    dot: "bg-etiqueta-coral-texto",
+    text: "text-etiqueta-coral-texto",
+  },
 };
 
 export function Tag({ type }: { type: PostType }) {

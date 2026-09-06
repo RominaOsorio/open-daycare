@@ -67,15 +67,15 @@ Convenciones:
 
 ## Acceptance criteria
 
-- [ ] `npm run build` termina sin errores.
-- [ ] `/` no muestra errores en la consola del navegador.
-- [ ] En escritorio (≥1024px) se ve el sidebar con logo, botón "Nueva publicación", nav (Feed activo, Niños, Avisos, Mi cuenta) y usuario "Caro Giménez".
-- [ ] En móvil (<1024px) el sidebar no se ve y aparece la barra inferior con los 4 ítems de navegación.
-- [ ] El header muestra "GUARDERÍA · SALA SOLES", "Buenas, Caro" y "12 niños · martes 17 jun".
-- [ ] Se muestran exactamente 3 publicaciones con los textos del mockup: logro (14:20, 3 likes, 1 comentario), actividad con foto (09:40, 5 likes, 2 comentarios), anuncio (07:50, 8 likes, 0 comentarios).
-- [ ] Cada badge de tipo usa los colores del mockup (logro verde, actividad celeste, anuncio azul).
-- [ ] Todos los enlaces internos apuntan a `#`.
-- [ ] Los colores coinciden con el mockup: fondo `#F6ECDF`, tarjetas `#FFFDF9`, bordes `#ECE0D0`.
+- [x] `npm run build` termina sin errores.
+- [x] `/` no muestra errores en la consola del navegador.
+- [x] En escritorio (≥1024px) se ve el sidebar con logo, botón "Nueva publicación", nav (Feed activo, Niños, Avisos, Mi cuenta) y usuario "Caro Giménez".
+- [x] En móvil (<1024px) el sidebar no se ve y aparece la barra inferior con los 4 ítems de navegación.
+- [x] El header muestra "GUARDERÍA · SALA SOLES", "Buenas, Caro" y "12 niños · martes 17 jun".
+- [x] Se muestran exactamente 3 publicaciones con los textos del mockup: logro (14:20, 3 likes, 1 comentario), actividad con foto (09:40, 5 likes, 2 comentarios), anuncio (07:50, 8 likes, 0 comentarios).
+- [x] Cada badge de tipo usa los colores del mockup (logro verde, actividad celeste, anuncio azul).
+- [x] Todos los enlaces internos apuntan a `#`.
+- [x] Los colores coinciden con el mockup: fondo `#F6ECDF`, tarjetas `#FFFDF9`, bordes `#ECE0D0`.
 
 ## Decisions
 

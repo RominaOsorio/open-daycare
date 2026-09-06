@@ -72,8 +72,10 @@ export function CreatePostModal({
   if (!open) return null;
 
   const toggleKid = (slug: string) => {
+    const isRemoving = selectedSlugs.includes(slug);
+    if (!isRemoving) setWholeRoom(false);
     setSelectedSlugs((current) =>
-      current.includes(slug)
+      isRemoving
         ? current.filter((s) => s !== slug)
         : [...current, slug],
     );
@@ -164,9 +166,14 @@ export function CreatePostModal({
             })}
             <button
               type="button"
-              onClick={() => setWholeRoom((current) => !current)}
+              onClick={() =>
+                setWholeRoom((current) => {
+                  if (!current) setSelectedSlugs([]);
+                  return !current;
+                })
+              }
               className={`rounded-full px-4 py-1.5 text-sm font-bold ${
-                wholeRoom
+                wholeRoom || selectedSlugs.length === KIDS.length
                   ? "border-[1.5px] border-tinta bg-tinta text-white"
                   : "border-[1.5px] border-borde bg-tarjeta text-[#6E6359]"
               }`}

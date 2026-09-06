@@ -86,6 +86,27 @@ function slugify(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+export function birthDateError(
+  value: string,
+  today = new Date(),
+): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = parseBirthDate(trimmed);
+  if (!parsed) return "Fecha inválida. Usá el formato dd/mm/aaaa";
+  const birth = new Date(parsed.year, parsed.month - 1, parsed.day);
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  if (birth.getTime() > todayStart.getTime()) {
+    return "La fecha no puede ser futura";
+  }
+  if (ageFrom(parsed, today) > 6) return "La edad debe ser entre 0 y 6 años";
+  return null;
+}
+
 function ageFrom(
   birth: { day: number; month: number; year: number },
   today: Date,

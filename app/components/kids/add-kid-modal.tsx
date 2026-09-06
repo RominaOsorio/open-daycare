@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@/app/components/icons";
 import {
+  birthDateError,
   buildKid,
-  parseBirthDate,
   ROOMS,
   type Kid,
   type Room,
@@ -59,7 +59,10 @@ export function AddKidModal({
 
   if (!open) return null;
 
-  const valid = name.trim().length > 0 && parseBirthDate(birthDate) !== null;
+  const dateFilled = birthDate.trim().length > 0;
+  const dateError = dateFilled ? birthDateError(birthDate) : null;
+  const valid =
+    name.trim().length > 0 && dateFilled && dateError === null;
 
   const handleSave = () => {
     if (!valid) return;
@@ -124,8 +127,14 @@ export function AddKidModal({
                 value={birthDate}
                 onChange={(event) => setBirthDate(event.target.value)}
                 placeholder="dd/mm/aaaa"
+                aria-invalid={dateError ? true : undefined}
                 className={inputClass}
               />
+              {dateError && (
+                <p className="mt-1.5 text-[12px] font-bold leading-snug text-rojo-oscuro">
+                  {dateError}
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <div className={labelClass}>SALA</div>

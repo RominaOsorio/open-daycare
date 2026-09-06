@@ -30,4 +30,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The app is in Spanish (childcare screens: niños, avisos, feed). Match UI text and commit messages to that.
 - UI design source of truth: `references/pantallas/*.dc.html` (HTML mockups) and `references/screenshots/`. Build screens to match them.
 - Spec-driven: use the `spec` skill (specs saved to `specs/`, written in the same language as the request) and `spec-impl` (creates a git branch named after the spec, only after its status means "Approved").
+- Once a spec is implemented, verify it with the `sepc-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors), fixes code issues, and marks the checkboxes `[x]` in the spec.
 - `CLAUDE.md` just includes `AGENTS.md` — update this file for cross-agent instructions.

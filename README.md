@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenDayCare
+
+App web de una guardería: el feed de publicaciones para las familias, la gestión de niños, los avisos de la sala y la cuenta del usuario.
+
+Construido con [Next.js 16](https://nextjs.org) (App Router), React 19, TypeScript y Tailwind CSS v4.
+
+## Stack
+
+- **Next.js 16.3.4** (App Router) + React 19 + TypeScript.
+- **Tailwind CSS v4** (CSS-first): la paleta vive en `app/globals.css` con `@theme`; no hay `tailwind.config.*`.
+- **Fuentes:** Fredoka y Nunito cargadas con `next/font/google` en `app/layout.tsx`.
+- Alias de rutas: `@/*` apunta a la raíz del repo (no hay `src/`).
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000) para ver la app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando            | Descripción                              |
+| ------------------ | ---------------------------------------- |
+| `npm run dev`      | Servidor de desarrollo                   |
+| `npm run build`    | Build de producción (verifica tipos)     |
+| `npm run start`    | Sirve el build de producción             |
+| `npm run lint`     | ESLint                                   |
 
-## Learn More
+No hay framework de tests ni script de typecheck: `next build` es la verificación completa más cercana.
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  layout.tsx          # Layout raíz: fuentes, metadata, lang="es"
+  globals.css         # Paleta del mockup en @theme + estilos base
+  page.tsx            # Home: feed de publicaciones
+  lib/data.ts         # Datos tipados (posts, sala, usuario)
+  components/
+    icons.tsx         # Iconos SVG inline
+    ui/               # Piezas reutilizables (Avatar, Tag)
+    layout/           # Sidebar, barra inferior de navegación
+    feed/             # Composer, divisor, tarjeta de post, acciones
+references/
+  pantallas/*.dc.html # Mockups HTML (fuente de verdad del diseño)
+  screenshots/        # Capturas de referencia
+specs/                # Especificaciones por funcionalidad
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Diseño
 
-## Deploy on Vercel
+La fuente de verdad del diseño son los mockups de `references/pantallas/*.dc.html` y las capturas de `references/screenshots/`. Las pantallas se construyen para coincidir con ellos (paleta, tipografía, layout y responsive).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Especificaciones
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El desarrollo es spec-driven: cada funcionalidad se especifica en `specs/` y se implementa por partes. El estado actual:
+
+- **Spec 01 — Home: feed de publicaciones** (`specs/01-feed-home.md`) — Implementado y verificado.
+
+## Roadmap
+
+- Autenticación y login.
+- Rutas de Niños, Avisos, Mi cuenta, crear/detalle de publicación y foto.
+- Persistencia (base de datos).
+
+Actualmente los enlaces internos apuntan a `#` (enlaces muertos) a la espera de esas pantallas.

@@ -23,7 +23,7 @@ export interface Post {
 export const ROOM = {
   name: "Sala Soles",
   label: "GUARDERÍA · SALA SOLES",
-  childrenCount: 12,
+  childrenCount: 8,
   date: "martes 17 jun",
 };
 

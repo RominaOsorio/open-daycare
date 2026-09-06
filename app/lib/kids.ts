@@ -7,6 +7,7 @@ export interface ParentLink {
   initial: string;
   avatarBg: string;
   avatarColor: string;
+  email?: string;
 }
 
 export interface Kid {
@@ -27,6 +28,9 @@ export interface Kid {
 export const ROOMS = ["Soles", "Nubes", "Estrellas"] as const;
 export type Room = (typeof ROOMS)[number];
 
+export const RELATIONS = ["Mamá", "Papá", "Tutor/a"] as const;
+export type Relation = (typeof RELATIONS)[number];
+
 export interface NewKidInput {
   name: string;
   birthDate: string;
@@ -41,6 +45,15 @@ export const AVATAR_PALETTE: Array<{ bg: string; color: string }> = [
   { bg: "#B9DEC4", color: "#3E8B62" },
   { bg: "#F4DC8E", color: "#9A7B1E" },
   { bg: "#C9B6E8", color: "#7B5FC0" },
+];
+
+export const PARENT_PALETTE: Array<{ bg: string; color: string }> = [
+  { bg: "#C9B6E8", color: "#fff" },
+  { bg: "#A9C7E8", color: "#fff" },
+  { bg: "#F4B8CC", color: "#fff" },
+  { bg: "#B9DEC4", color: "#fff" },
+  { bg: "#F4DC8E", color: "#fff" },
+  { bg: "#A9D9E8", color: "#fff" },
 ];
 
 const MONTHS_SHORT = [
@@ -150,6 +163,37 @@ export function buildKid(
     entryDate: `${MONTHS_SHORT[today.getMonth()]} ${today.getFullYear()}`,
     notes: input.notes?.trim() || undefined,
     parents: [],
+  };
+}
+
+const INVITE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function generateInviteCode(length = 5): string {
+  let code = "";
+  for (let i = 0; i < length; i += 1) {
+    code += INVITE_CHARS[Math.floor(Math.random() * INVITE_CHARS.length)];
+  }
+  return code;
+}
+
+export function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+export function buildParent(
+  input: { name: string; email: string; relation: Relation },
+  existingParents: ParentLink[],
+): ParentLink {
+  const palette =
+    PARENT_PALETTE[existingParents.length % PARENT_PALETTE.length];
+  return {
+    name: input.name.trim(),
+    relation: input.relation,
+    status: "pendiente",
+    initial: input.name.trim().charAt(0).toUpperCase(),
+    avatarBg: palette.bg,
+    avatarColor: palette.color,
+    email: input.email.trim(),
   };
 }
 

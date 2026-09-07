@@ -1,6 +1,6 @@
 # SPEC 05 — Vincular padre
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 02, SPEC 04
 > **Fecha:** 2026-09-06
 > **Objetivo:** Implementar la vinculación de un padre/madre en un modal desde `/kids/[slug]` basado en `references/pantallas/vincular-padre.dc.html`, con nombre, email y parentesco, código de invitación generado y el padre agregado en memoria con estado pendiente.

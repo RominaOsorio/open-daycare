@@ -1,6 +1,6 @@
 # SPEC 07 — Tabla `daycares` (primera migración)
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-09-07
 > **Objetivo:** Crear la primera tabla del esquema, `daycares`, en Supabase siguiendo la referencia `07-DB-Schema` y el patrón de migraciones timestamped, con RLS activado y un seed de la guardería para probar la UI.

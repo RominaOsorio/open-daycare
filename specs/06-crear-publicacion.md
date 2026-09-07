@@ -1,6 +1,6 @@
 # SPEC 06 — Crear publicación (modal)
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01 (feed), SPEC 05 (patrón de modal)
 > **Fecha:** 2026-09-06
 > **Objetivo:** Implementar el modal de creación de publicación en `/` basado en `references/pantallas/crear-publicacion.dc.html`, abierto desde "Nueva publicación" (sidebar) y "Compartí un momento…" (composer), que al publicar agrega la publicación al inicio del feed en memoria.

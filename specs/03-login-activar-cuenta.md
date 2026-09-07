@@ -1,6 +1,6 @@
 # SPEC 03 — Login y activación de cuenta
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-09-06
 > **Objetivo:** Implementar `/login` y `/activar-cuenta` idénticos a los mockups `references/pantallas/login.dc.html` y `references/pantallas/activar-cuenta.dc.html`, sin el selector de rol Personal/Familia y con navegación real hacia las pantallas que ya existen.

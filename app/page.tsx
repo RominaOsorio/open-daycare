@@ -4,7 +4,8 @@ import { ComposerCard } from "@/app/components/feed/composer-card";
 import { SectionDivider } from "@/app/components/feed/section-divider";
 import { PostList } from "@/app/components/feed/post-list";
 import { CreatePostProvider } from "@/app/components/feed/create-post-provider";
-import { ROOM, USER } from "@/app/lib/data";
+import { HomeGreeting } from "@/app/components/user/home-greeting";
+import { ROOM } from "@/app/lib/data";
 
 export default function Home() {
   return (
@@ -18,9 +19,7 @@ export default function Home() {
               <div className="mb-1 text-[12.5px] font-extrabold tracking-[.8px] text-rojo">
                 {ROOM.label}
               </div>
-              <h1 className="m-0 font-display text-[30px] font-semibold text-tinta">
-                Buenas, {USER.name.split(" ")[0]}
-              </h1>
+            <HomeGreeting />
               <p className="m-0 mt-[5px] text-[14.5px] text-gris-oscuro">
                 {ROOM.childrenCount} niños · {ROOM.date}
               </p>

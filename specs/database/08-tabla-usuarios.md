@@ -1,6 +1,6 @@
 # SPEC 08 — Tabla `users` y enums de usuario (seed staff)
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 07 (tabla `daycares`)
 > **Fecha:** 2026-09-07
 > **Objetivo:** Crear la tabla `users` con los enums `user_role` y `user_status`, el trigger que crea el perfil al registrarse en Supabase Auth y un usuario staff real para probar.

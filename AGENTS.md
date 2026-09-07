@@ -14,6 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 .playwright-mcp folder.
 - Use Context7 to retrieve the latest framework documentation.
 - Supabase MCP: use `list_tables` before schema changes, `get_logs`/`get_advisors` when debugging, and the publishable/anon keys tools when configuring client integrations. RLS is enabled on every table in exposed schemas.
+- **Migrations siempre:** toda manipulación de la base de datos (DDL, seed, backfill, cambios de datos) va SIEMPRE por una migración versionada — `supabase_apply_migration` (o `supabase/migrations/<timestamp>_<nombre>.sql` en el repo). Nunca se ejecuta SQL directo contra producción fuera de una migración. Verifica con `list_migrations`/`list_tables` después de aplicar.
 
 ## Skills
 

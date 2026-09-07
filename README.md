@@ -10,13 +10,14 @@ Construido con [Next.js 16](https://nextjs.org) (App Router), React 19, TypeScri
 - **Tailwind CSS v4** (CSS-first): la paleta vive en `app/globals.css` con `@theme`; no hay `tailwind.config.*`.
 - **Fuentes:** Fredoka y Nunito cargadas con `next/font/google` en `app/layout.tsx`.
 - **Supabase:** backend de auth y base de datos (Postgres + RLS). Referencia del schema en `07-DB-Schema/` (solo documentación, no está migrado aún).
+- **Clientes Supabase:** la app interactúa con la base de datos usando los paquetes oficiales para Next.js — `@supabase/supabase-js` + `@supabase/ssr`. Los helpers viven en `utils/supabase/` (`server.ts`, `client.ts`, `middleware.ts`) y `proxy.ts` en la raíz refresca la sesión en cada request (Next 16 renombró `middleware` a `proxy`). Env vars: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en `.env.local`.
 - Alias de rutas: `@/*` apunta a la raíz del repo (no hay `src/`).
 
 ## Getting Started
 
 ```bash
 npm install
-cp .env.example .env   # completá SUPABASE_DB_PASSWORD
+cp .env.example .env.local   # completá SUPABASE_DB_PASSWORD (en .env) y las NEXT_PUBLIC_* (en .env.local)
 npm run dev
 ```
 
@@ -49,6 +50,9 @@ app/
 references/
   pantallas/*.dc.html # Mockups HTML (fuente de verdad del diseño)
   screenshots/        # Capturas de referencia
+utils/
+  supabase/           # Clientes Supabase (server, client, middleware)
+proxy.ts              # Refresca la sesión en cada request (Next 16)
 specs/                # Especificaciones por funcionalidad
 ```
 

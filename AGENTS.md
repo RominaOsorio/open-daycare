@@ -30,6 +30,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Tailwind v4 is CSS-first: no `tailwind.config.*`; theme lives in `app/globals.css` (`@theme` / `@import "tailwindcss"`).
 - `@/*` path alias maps to the repo root (no `src/`).
 - Supabase (Postgres) backend: schema reference in `references/../07-DB-Schema/` (see `opencode.json`). Client keys via `.env` (`SUPABASE_DB_PASSWORD`, etc.).
+- La app interactúa con Supabase usando los paquetes oficiales de Next.js: `@supabase/supabase-js` + `@supabase/ssr`. Clientes y helpers en `utils/supabase/` (`server.ts`, `client.ts`, `middleware.ts`) y `proxy.ts` en la raíz para refrescar la sesión (Next 16 renombró `middleware` a `proxy`). Env vars en `.env.local`: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
 ## Commands
 

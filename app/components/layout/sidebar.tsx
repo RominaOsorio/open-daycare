@@ -1,15 +1,37 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/app/components/layout/nav-items";
 import { Avatar } from "@/app/components/ui/avatar";
 import { LogoutIcon, PlusIcon, SunIcon } from "@/app/components/icons";
 import { useCreatePost } from "@/app/components/feed/create-post-provider";
+import { useUser } from "@/app/components/user/user-provider";
+import { createClient } from "@/utils/supabase/client";
 import { ROOM, USER } from "@/app/lib/data";
+
+const ROLE_LABEL: Record<string, string> = {
+  staff: "Staff",
+  parent: "Familia",
+  admin: "Admin",
+};
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { openModal } = useCreatePost();
+  const { profile } = useUser();
+
+  const name = profile?.full_name ?? USER.name;
+  const role = profile ? ROLE_LABEL[profile.role] : USER.role;
+  const initial = name.charAt(0).toUpperCase();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
     <aside className="sticky top-0 hidden h-screen w-[248px] flex-none flex-col border-r border-borde bg-tarjeta px-4 py-6 lg:flex">
       <a href="#" className="flex items-center gap-2.5 px-2 pb-[22px] pt-1">
@@ -58,20 +80,21 @@ export function Sidebar() {
       <div className="mt-2.5 border-t border-borde pt-3.5">
         <div className="flex items-center gap-2.5 px-2 py-1.5">
           <Avatar
-            author={{ name: USER.name, initial: USER.initial, avatarBg: USER.avatarBg, avatarColor: USER.avatarColor }}
+            author={{ name, initial, avatarBg: USER.avatarBg, avatarColor: USER.avatarColor }}
             className="h-[38px] w-[38px] font-display text-base font-semibold"
           />
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-extrabold text-tinta">{USER.name}</div>
-            <div className="text-xs text-gris">{USER.role}</div>
+            <div className="text-sm font-extrabold text-tinta">{name}</div>
+            <div className="text-xs text-gris">{role}</div>
           </div>
-          <a
-            href="/login"
+          <button
+            type="button"
+            onClick={handleLogout}
             title="Cerrar sesión"
             className="flex h-8 w-8 flex-none items-center justify-center rounded-[10px] bg-crema text-gris-oscuro"
           >
             <LogoutIcon className="h-4 w-4" />
-          </a>
+          </button>
         </div>
       </div>
     </aside>

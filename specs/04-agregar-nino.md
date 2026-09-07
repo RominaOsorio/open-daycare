@@ -1,6 +1,6 @@
 # SPEC 04 — Agregar niño
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 02
 > **Fecha:** 2026-09-06
 > **Objetivo:** Implementar el alta de un niño desde `/kids` en un modal basado en `references/pantallas/agregar-nino.dc.html`, con nombre, fecha de nacimiento y sala obligatorios, alergias y notas médicas opcionales, 3 salas hardcodeadas y el niño agregado al listado en memoria.

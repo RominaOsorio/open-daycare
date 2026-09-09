@@ -1,18 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AddKidModal } from "@/app/components/kids/add-kid-modal";
 import { KidsGrid } from "@/app/components/kids/kids-grid";
 import { PlusIcon } from "@/app/components/icons";
-import { KIDS, type Kid } from "@/app/lib/kids";
+import {
+  toIsoDate,
+  todayIso,
+  type Kid,
+  type NewKidInput,
+  type Room,
+} from "@/app/lib/kids-data";
+import { createClient } from "@/utils/supabase/client";
 
-export function KidsManager() {
-  const [kids, setKids] = useState<Kid[]>(KIDS);
+export function KidsManager({
+  rooms,
+  initialKids,
+}: {
+  rooms: Room[];
+  initialKids: Kid[];
+}) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const handleSave = (kid: Kid) => {
-    setKids((current) => [...current, kid]);
+  const handleSave = async (input: NewKidInput) => {
+    setSaving(true);
+    setSaveError(null);
+    const birthDate = toIsoDate(input.birthDate);
+    const supabase = createClient();
+    const { error } = await supabase.from("children").insert({
+      room_id: input.roomId,
+      full_name: input.name,
+      birth_date: birthDate,
+      enrolled_at: todayIso(),
+      allergy_tags: input.allergyTags,
+      medical_notes: input.notes || null,
+      photo_consent: true,
+    });
+    setSaving(false);
+    if (error) {
+      setSaveError("No se pudo guardar el niño. Intentá de nuevo.");
+      return;
+    }
     setModalOpen(false);
+    router.refresh();
   };
 
   return (
@@ -35,13 +69,12 @@ export function KidsManager() {
           Agregar niño
         </button>
       </div>
-      <KidsGrid
-        kids={kids}
-        navigableSlugs={KIDS.map((kid) => kid.slug)}
-      />
+      <KidsGrid kids={initialKids} rooms={rooms} />
       <AddKidModal
         open={modalOpen}
-        existingSlugs={kids.map((kid) => kid.slug)}
+        rooms={rooms}
+        saving={saving}
+        error={saveError}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}
       />

@@ -2,19 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ChevronDownIcon } from "@/app/components/icons";
+import { birthDateError } from "@/app/lib/kids";
 import {
-  birthDateError,
-  buildKid,
-  ROOMS,
-  type Kid,
+  parseAllergies,
+  type NewKidInput,
   type Room,
-} from "@/app/lib/kids";
+} from "@/app/lib/kids-data";
 
 interface AddKidModalProps {
   open: boolean;
-  existingSlugs: string[];
+  rooms: Room[];
+  saving: boolean;
+  error: string | null;
   onClose: () => void;
-  onSave: (kid: Kid) => void;
+  onSave: (input: NewKidInput) => void;
 }
 
 const labelClass =
@@ -25,23 +26,25 @@ const inputClass =
 
 export function AddKidModal({
   open,
-  existingSlugs,
+  rooms,
+  saving,
+  error,
   onClose,
   onSave,
 }: AddKidModalProps) {
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [room, setRoom] = useState<Room>("Soles");
+  const [roomId, setRoomId] = useState(() => rooms[0]?.id ?? "");
   const [allergies, setAllergies] = useState("");
   const [notes, setNotes] = useState("");
 
   const reset = useCallback(() => {
     setName("");
     setBirthDate("");
-    setRoom("Soles");
+    setRoomId(rooms[0]?.id ?? "");
     setAllergies("");
     setNotes("");
-  }, []);
+  }, [rooms]);
 
   const handleClose = useCallback(() => {
     reset();
@@ -61,17 +64,25 @@ export function AddKidModal({
 
   const dateFilled = birthDate.trim().length > 0;
   const dateError = dateFilled ? birthDateError(birthDate) : null;
+  const selectedRoomId = roomId || rooms[0]?.id || "";
   const valid =
-    name.trim().length > 0 && dateFilled && dateError === null;
+    name.trim().length > 0 && dateFilled && dateError === null && selectedRoomId !== "";
 
   const handleSave = () => {
-    if (!valid) return;
-    const kid = buildKid(
-      { name, birthDate, room, allergies, notes },
-      existingSlugs,
-    );
-    reset();
-    onSave(kid);
+    if (!valid || saving) return;
+    const { tags, extra } = parseAllergies(allergies);
+    const finalNotes = extra.length
+      ? notes.trim()
+        ? `${notes.trim()}\nAlergias: ${extra.join(", ")}`
+        : `Alergias: ${extra.join(", ")}`
+      : notes.trim();
+    onSave({
+      name,
+      birthDate,
+      roomId: selectedRoomId,
+      allergyTags: tags,
+      notes: finalNotes,
+    });
   };
 
   return (
@@ -100,14 +111,14 @@ export function AddKidModal({
           <button
             type="button"
             onClick={handleSave}
-            disabled={!valid}
+            disabled={!valid || saving}
             className={
-              valid
+              valid && !saving
                 ? "text-[15px] font-extrabold text-rojo-oscuro"
                 : "cursor-not-allowed text-[15px] font-extrabold text-[#c9bcac]"
             }
           >
-            Guardar
+            {saving ? "Guardando…" : "Guardar"}
           </button>
         </div>
 
@@ -140,13 +151,13 @@ export function AddKidModal({
               <div className={labelClass}>SALA</div>
               <div className="relative">
                 <select
-                  value={room}
-                  onChange={(event) => setRoom(event.target.value as Room)}
+                  value={selectedRoomId}
+                  onChange={(event) => setRoomId(event.target.value)}
                   className={`${inputClass} appearance-none pr-10 font-bold`}
                 >
-                  {ROOMS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  {rooms.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
                     </option>
                   ))}
                 </select>
@@ -170,6 +181,11 @@ export function AddKidModal({
             placeholder="Indicaciones, medicación, contactos…"
             className={`${inputClass} min-h-[90px] resize-y leading-[1.5]`}
           />
+          {error && (
+            <p className="mt-3 text-[12px] font-bold leading-snug text-rojo-oscuro">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>

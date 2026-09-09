@@ -2,14 +2,20 @@
 
 import { useState } from "react";
 import { LinkParentModal } from "@/app/components/kids/link-parent-modal";
-import type { Kid, ParentLink } from "@/app/lib/kids";
+import type { ParentLink } from "@/app/lib/kids";
 
 function statusLabel(parent: ParentLink) {
   return parent.status === "activo" ? "activa" : "invitación enviada";
 }
 
-export function ParentsCard({ kid }: { kid: Kid }) {
-  const [parents, setParents] = useState<ParentLink[]>(kid.parents);
+export function ParentsCard({
+  kidName,
+  initialParents,
+}: {
+  kidName: string;
+  initialParents: ParentLink[];
+}) {
+  const [parents, setParents] = useState<ParentLink[]>(initialParents);
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleSend = (parent: ParentLink) => {
@@ -76,7 +82,7 @@ export function ParentsCard({ kid }: { kid: Kid }) {
       </div>
       <LinkParentModal
         open={modalOpen}
-        kidName={kid.name}
+        kidName={kidName}
         existingParents={parents}
         onClose={() => setModalOpen(false)}
         onSend={handleSend}

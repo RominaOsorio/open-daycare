@@ -1,4 +1,4 @@
-import type { Kid } from "@/app/lib/kids";
+import type { Kid } from "@/app/lib/kids-data";
 
 export function ProfileHeader({ kid }: { kid: Kid }) {
   return (
@@ -14,7 +14,7 @@ export function ProfileHeader({ kid }: { kid: Kid }) {
           {kid.name}
         </h1>
         <p className="m-0 mt-[3px] text-[15px] text-gris-oscuro">
-          {kid.age} años · Sala {kid.room}
+          {kid.age} años · Sala {kid.roomName}
         </p>
       </div>
       <a

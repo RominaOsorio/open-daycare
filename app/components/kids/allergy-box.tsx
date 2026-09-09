@@ -1,5 +1,5 @@
 import { AlertIcon } from "@/app/components/icons";
-import type { Kid } from "@/app/lib/kids";
+import type { Kid } from "@/app/lib/kids-data";
 
 export function AllergyBox({ kid }: { kid: Kid }) {
   return (

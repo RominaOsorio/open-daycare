@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SearchIcon } from "@/app/components/icons";
 import { KidCard } from "@/app/components/kids/kid-card";
-import { ROOMS, type Kid } from "@/app/lib/kids";
+import type { Kid, Room } from "@/app/lib/kids-data";
 
 function normalize(s: string) {
   return s
@@ -12,20 +12,14 @@ function normalize(s: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-export function KidsGrid({
-  kids,
-  navigableSlugs,
-}: {
-  kids: Kid[];
-  navigableSlugs?: string[];
-}) {
+export function KidsGrid({ kids, rooms }: { kids: Kid[]; rooms: Room[] }) {
   const [query, setQuery] = useState("");
   const filtered = kids.filter((kid) =>
     normalize(kid.name).includes(normalize(query)),
   );
 
-  const roomsWithKids = ROOMS.filter((room) =>
-    filtered.some((kid) => kid.room === room),
+  const roomsWithKids = rooms.filter((room) =>
+    filtered.some((kid) => kid.roomId === room.id),
   );
 
   return (
@@ -40,12 +34,12 @@ export function KidsGrid({
         />
       </div>
       {roomsWithKids.map((room) => {
-        const roomKids = filtered.filter((kid) => kid.room === room);
+        const roomKids = filtered.filter((kid) => kid.roomId === room.id);
         return (
-          <div key={room} className="mb-6">
+          <div key={room.id} className="mb-6">
             <div className="mb-3.5 flex items-center gap-3">
               <span className="text-[12.5px] font-extrabold tracking-[.8px] text-tinta">
-                SALA {room.toUpperCase()}
+                SALA {room.name.toUpperCase()}
               </span>
               <span className="text-[13px] text-gris">
                 {roomKids.length} {roomKids.length === 1 ? "niño" : "niños"}
@@ -54,20 +48,19 @@ export function KidsGrid({
             </div>
             <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
               {roomKids.map((kid) => (
-                <KidCard
-                  key={kid.slug}
-                  kid={kid}
-                  navigable={
-                    navigableSlugs === undefined ||
-                    navigableSlugs.includes(kid.slug)
-                  }
-                />
+                <KidCard key={kid.id} kid={kid} />
               ))}
             </div>
           </div>
         );
       })}
-      {filtered.length === 0 && (
+      {kids.length === 0 && (
+        <p className="mt-6 text-center text-sm text-gris">
+          No hay niños registrados todavía. Usá «Agregar niño» para crear el
+          primero.
+        </p>
+      )}
+      {kids.length > 0 && filtered.length === 0 && (
         <p className="mt-6 text-center text-sm text-gris">
           No se encontraron niños.
         </p>

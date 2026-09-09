@@ -1,9 +1,9 @@
-import type { Kid } from "@/app/lib/kids";
+import type { Kid } from "@/app/lib/kids-data";
 
 export function KidInfoCard({ kid }: { kid: Kid }) {
   const rows: [string, string][] = [
     ["Fecha de nacimiento", kid.birthDate],
-    ["Sala", kid.room],
+    ["Sala", kid.roomName],
     ["Ingreso", kid.entryDate],
   ];
 

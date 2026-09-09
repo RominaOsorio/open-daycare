@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Sidebar } from "@/app/components/layout/sidebar";
@@ -7,20 +8,34 @@ import { AllergyBox } from "@/app/components/kids/allergy-box";
 import { KidInfoCard } from "@/app/components/kids/kid-info-card";
 import { ParentsCard } from "@/app/components/kids/parents-card";
 import { ChevronLeftIcon, SunIcon } from "@/app/components/icons";
-import { KIDS } from "@/app/lib/kids";
-
-export function generateStaticParams() {
-  return KIDS.map((kid) => ({ slug: kid.slug }));
-}
+import { mapChildRow, type ChildRow, type Room } from "@/app/lib/kids-data";
+import { createClient } from "@/utils/supabase/server";
 
 export default async function KidProfilePage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { slug } = await params;
-  const kid = KIDS.find((k) => k.slug === slug);
-  if (!kid) notFound();
+  const { id } = await params;
+  const supabase = createClient(await cookies());
+
+  const { data: child } = await supabase
+    .from("children")
+    .select(
+      "id, full_name, birth_date, enrolled_at, medical_notes, allergy_tags, status, room_id",
+    )
+    .eq("id", id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!child) notFound();
+
+  const { data: room } = await supabase
+    .from("rooms")
+    .select("id, name")
+    .eq("id", child.room_id)
+    .maybeSingle();
+
+  const kid = mapChildRow(child as ChildRow, (room as Room)?.name ?? "", 0);
 
   return (
     <div className="flex min-h-screen bg-crema">
@@ -49,7 +64,7 @@ export default async function KidProfilePage({
                 <SunIcon className="h-[18px] w-[18px]" />
                 Resumen del día
               </a>
-              <ParentsCard kid={kid} />
+              <ParentsCard kidName={kid.name} initialParents={[]} />
             </div>
           </div>
         </div>

@@ -22,14 +22,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `spec-impl` — implements an approved spec (creates a branch named after the spec, only after its status is "Approved").
 - `supabase` — ANY task involving Supabase (auth, DB, RLS, migrations, debugging). Verify against current docs; re-check the changelog for breaking changes.
 - `supabase-postgres-best-practices` — load BEFORE writing/changing anything in Postgres (DDL, RLS, migrations, triggers, indexes).
-- `sepc-verifier` agent — verifies spec acceptance criteria with Playwright screenshots vs references.
+- `sepc-verifier` agent — verifies spec acceptance criteria: Playwright screenshots vs references for UI, y consultas SQL/advisors para specs de base de datos.
 
 ## Stack
 
 - Next.js 16.3.4 (App Router) + React 19 + TypeScript, Tailwind CSS v4.
 - Tailwind v4 is CSS-first: no `tailwind.config.*`; theme lives in `app/globals.css` (`@theme` / `@import "tailwindcss"`).
 - `@/*` path alias maps to the repo root (no `src/`).
-- Supabase (Postgres) backend: schema reference in `references/../07-DB-Schema/` (see `opencode.json`). Client keys via `.env` (`SUPABASE_DB_PASSWORD`, etc.).
+- Supabase (Postgres) backend: esquema aplicado con migraciones versionadas en `supabase/migrations/`; referencia en `07-DB-Schema/` (ver `opencode.json`). Client keys via `.env` (`SUPABASE_DB_PASSWORD`, etc.).
+- Tablas aplicadas en `public`: `daycares`, `users`, `rooms`, `children`, `parent_children` e `invitations` (RLS en todas). El resto del schema de referencia (`posts`, `daily_summaries`, …) llega en specs futuros.
 - La app interactúa con Supabase usando los paquetes oficiales de Next.js: `@supabase/supabase-js` + `@supabase/ssr`. Clientes y helpers en `utils/supabase/` (`server.ts`, `client.ts`, `middleware.ts`) y `proxy.ts` en la raíz para refrescar la sesión (Next 16 renombró `middleware` a `proxy`). Env vars en `.env.local`: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
 ## Commands
@@ -43,5 +44,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The app is in Spanish (childcare screens: niños, avisos, feed). Match UI text and commit messages to that.
 - UI design source of truth: `references/pantallas/*.dc.html` (HTML mockups) and `references/screenshots/`. Build screens to match them.
 - Spec-driven: use the `spec` skill (specs saved to `specs/` — los de base de datos en `specs/database/` —, written in the same language as the request) and `spec-impl` (creates a git branch named after the spec, only after its status means "Approved").
-- Once a spec is implemented, verify it with the `sepc-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors), fixes code issues, and marks the checkboxes `[x]` in the spec.
+- Once a spec is implemented, verify it with the `sepc-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors; para specs de base de datos: consultas SQL y advisors), fixes code issues, and marks the checkboxes `[x]` in the spec.
 - `CLAUDE.md` just includes `AGENTS.md` — update this file for cross-agent instructions.

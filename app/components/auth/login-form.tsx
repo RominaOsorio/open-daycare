@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/utils/supabase/client";
 
-export function LoginForm() {
+export function LoginForm({
+  notice,
+}: {
+  notice?: "activated" | "error";
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,6 +45,17 @@ export function LoginForm() {
       <p className="m-0 mb-7 text-[15px] text-gris-oscuro">
         Ingresá para ver el día de hoy.
       </p>
+
+      {notice === "activated" && (
+        <div className="mb-5 rounded-[14px] bg-verde-claro px-4 py-3 text-[13.5px] font-bold leading-snug text-verde">
+          Cuenta activada. Iniciá sesión con tu email y contraseña.
+        </div>
+      )}
+      {notice === "error" && (
+        <div className="mb-5 rounded-[14px] bg-[#FDF0EB] px-4 py-3 text-[13.5px] font-bold leading-snug text-[#8C3B24]">
+          No pudimos vincular la invitación. Contactá a la guardería.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-2 text-xs font-bold tracking-[.7px] text-gris-oscuro">

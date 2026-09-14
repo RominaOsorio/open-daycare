@@ -1,6 +1,6 @@
 ---
-description: Verifies acceptance criteria of a spec file. Reviews implementation against each criterion, fixes code/spec issues found, and marks checkboxes. Uses Playwright MCP with vision to compare screenshots against references, and Context7 MCP to validate Next.js best practices. Use when a spec has been implemented and needs verification, or to check which acceptance criteria pass/fail.
-mode: all
+description: Verifies acceptance criteria of a spec file. Reviews implementation against each criterion, fixes code/spec issues found, and marks checkboxes. Uses Playwright MCP with vision to compare screenshots against references, Context7 MCP to validate Next.js best practices, and delegates database security reviews to the read-only db-security-auditor subagent. Use when a spec has been implemented and needs verification, or to check which acceptance criteria pass/fail.
+mode: subagent
 model: opencode-go/deepseek-v4-flash-vision-exp
 color: success
 steps: 75
@@ -43,6 +43,7 @@ For each checkbox criterion, classify it into one of:
 | **Lint/typecheck** | `npm run lint`, `tsc`, type errors | Bash commands |
 | **Console** | browser console errors | Playwright console messages |
 | **Code structure** | file paths, component organization, data location | glob + read |
+| **Database security** | RLS, policies, roles/grants, migrations, `security definer` functions | `db-security-auditor` subagent (read-only) + Supabase MCP (`execute_sql` with rollback, `get_advisors`) |
 
 ### Step 3 — Ensure dev server is running
 
@@ -84,6 +85,12 @@ If any criterion is Visual or Console:
 2. Use `read` to verify expected structures/exports.
 3. Mark accordingly. Fix if missing.
 
+**Database security criteria:**
+1. Delegate the review to the `db-security-auditor` subagent with the spec path/scope (task tool). It is read-only and returns findings with severity, evidence, and proposed remediation SQL.
+2. Independently confirm with Supabase MCP: `supabase_list_tables`, read-only `supabase_execute_sql` queries wrapped in `begin; ... rollback;`, and `supabase_get_advisors`.
+3. Mark `[x]` only when there are no critical/high findings, or they were fixed and re-verified with evidence.
+4. Database fixes MUST go through a versioned migration (`supabase_apply_migration` and a file in `supabase/migrations/`), never direct SQL (see AGENTS.md).
+
 ### Step 5 — Mark checkboxes in the spec
 
 Edit the spec file to update each criterion:
@@ -124,5 +131,6 @@ Details of still-failing criteria:
 - Screenshots from Playwright go in `.playwright-mcp/` (gitignored).
 - Code fixes must follow project conventions (AGENTS.md): Tailwind v4 with `@theme`, `next/font/google`, App Router, code in English, UI in Spanish.
 - Don't mark a criterion as passing if you couldn't verify it.
+- **Database specs:** rely on the `db-security-auditor` subagent for RLS/security evidence; never mark a security criterion passing without it. Database fixes require versioned migrations, not direct SQL.
 - If the spec has no `## Acceptance criteria` section, report that and stop.
 - Close the Playwright browser when done (`playwright_browser_close`) to free resources.

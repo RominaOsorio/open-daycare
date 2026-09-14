@@ -1,6 +1,7 @@
 export type ParentStatus = "activo" | "pendiente";
 
 export interface ParentLink {
+  id: string;
   name: string;
   relation: string;
   status: ParentStatus;
@@ -27,15 +28,6 @@ export interface Kid {
 
 export const RELATIONS = ["Mamá", "Papá", "Tutor/a"] as const;
 export type Relation = (typeof RELATIONS)[number];
-
-export const PARENT_PALETTE: Array<{ bg: string; color: string }> = [
-  { bg: "#C9B6E8", color: "#fff" },
-  { bg: "#A9C7E8", color: "#fff" },
-  { bg: "#F4B8CC", color: "#fff" },
-  { bg: "#B9DEC4", color: "#fff" },
-  { bg: "#F4DC8E", color: "#fff" },
-  { bg: "#A9D9E8", color: "#fff" },
-];
 
 export function parseBirthDate(
   value: string,
@@ -103,23 +95,6 @@ export function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-export function buildParent(
-  input: { name: string; email: string; relation: Relation },
-  existingParents: ParentLink[],
-): ParentLink {
-  const palette =
-    PARENT_PALETTE[existingParents.length % PARENT_PALETTE.length];
-  return {
-    name: input.name.trim(),
-    relation: input.relation,
-    status: "pendiente",
-    initial: input.name.trim().charAt(0).toUpperCase(),
-    avatarBg: palette.bg,
-    avatarColor: palette.color,
-    email: input.email.trim(),
-  };
-}
-
 export const KIDS: Kid[] = [
   {
     slug: "mateo-fernandez",
@@ -135,6 +110,7 @@ export const KIDS: Kid[] = [
     notes: "Alergia al maní. Evitar frutos secos. Lleva inhalador en la mochila.",
     parents: [
       {
+        id: "mock-lucia-fernandez",
         name: "Lucía Fernández",
         relation: "Mamá",
         status: "activo",
@@ -143,6 +119,7 @@ export const KIDS: Kid[] = [
         avatarColor: "#fff",
       },
       {
+        id: "mock-diego-fernandez",
         name: "Diego Fernández",
         relation: "Papá",
         status: "pendiente",
@@ -164,6 +141,7 @@ export const KIDS: Kid[] = [
     entryDate: "mar 2025",
     parents: [
       {
+        id: "mock-carolina-mendez",
         name: "Carolina Méndez",
         relation: "Mamá",
         status: "activo",
@@ -185,6 +163,7 @@ export const KIDS: Kid[] = [
     entryDate: "feb 2025",
     parents: [
       {
+        id: "mock-paula-ruiz",
         name: "Paula Ruiz",
         relation: "Mamá",
         status: "activo",
@@ -193,6 +172,7 @@ export const KIDS: Kid[] = [
         avatarColor: "#fff",
       },
       {
+        id: "mock-martin-ruiz",
         name: "Martín Ruiz",
         relation: "Papá",
         status: "activo",
@@ -227,6 +207,7 @@ export const KIDS: Kid[] = [
     entryDate: "feb 2025",
     parents: [
       {
+        id: "mock-julia-diaz",
         name: "Julia Díaz",
         relation: "Mamá",
         status: "activo",
@@ -248,6 +229,7 @@ export const KIDS: Kid[] = [
     entryDate: "abr 2025",
     parents: [
       {
+        id: "mock-andres-castro",
         name: "Andrés Castro",
         relation: "Papá",
         status: "activo",
@@ -269,6 +251,7 @@ export const KIDS: Kid[] = [
     entryDate: "feb 2025",
     parents: [
       {
+        id: "mock-carla-romero",
         name: "Carla Romero",
         relation: "Mamá",
         status: "activo",
@@ -290,6 +273,7 @@ export const KIDS: Kid[] = [
     entryDate: "mar 2025",
     parents: [
       {
+        id: "mock-gabriel-vega",
         name: "Gabriel Vega",
         relation: "Papá",
         status: "activo",

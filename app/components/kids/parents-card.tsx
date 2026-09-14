@@ -9,19 +9,15 @@ function statusLabel(parent: ParentLink) {
 }
 
 export function ParentsCard({
+  kidId,
   kidName,
-  initialParents,
+  parents,
 }: {
+  kidId: string;
   kidName: string;
-  initialParents: ParentLink[];
+  parents: ParentLink[];
 }) {
-  const [parents, setParents] = useState<ParentLink[]>(initialParents);
   const [modalOpen, setModalOpen] = useState(false);
-
-  const handleSend = (parent: ParentLink) => {
-    setParents((current) => [...current, parent]);
-    setModalOpen(false);
-  };
 
   return (
     <div className="rounded-2xl border border-borde bg-tarjeta px-[18px] py-4">
@@ -30,7 +26,7 @@ export function ParentsCard({
       </div>
       <div className="flex flex-col gap-3.5">
         {parents.map((parent) => (
-          <div key={parent.name} className="flex items-center gap-3">
+          <div key={parent.id} className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 flex-none items-center justify-center rounded-full font-display text-base font-semibold"
               style={{ background: parent.avatarBg, color: parent.avatarColor }}
@@ -82,10 +78,10 @@ export function ParentsCard({
       </div>
       <LinkParentModal
         open={modalOpen}
+        kidId={kidId}
         kidName={kidName}
         existingParents={parents}
         onClose={() => setModalOpen(false)}
-        onSend={handleSend}
       />
     </div>
   );

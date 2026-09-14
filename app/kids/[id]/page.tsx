@@ -8,6 +8,11 @@ import { AllergyBox } from "@/app/components/kids/allergy-box";
 import { KidInfoCard } from "@/app/components/kids/kid-info-card";
 import { ParentsCard } from "@/app/components/kids/parents-card";
 import { ChevronLeftIcon, SunIcon } from "@/app/components/icons";
+import {
+  buildParentLinks,
+  type AcceptedParentRow,
+  type PendingParentRow,
+} from "@/app/lib/invitations";
 import { mapChildRow, type ChildRow, type Room } from "@/app/lib/kids-data";
 import { createClient } from "@/utils/supabase/server";
 
@@ -37,6 +42,25 @@ export default async function KidProfilePage({
 
   const kid = mapChildRow(child as ChildRow, (room as Room)?.name ?? "", 0);
 
+  const { data: acceptedParents } = await supabase
+    .from("parent_children")
+    .select("id, relationship, parent:users(id, full_name)")
+    .eq("child_id", id)
+    .order("created_at", { ascending: true });
+
+  const { data: pendingInvitations } = await supabase
+    .from("invitations")
+    .select("id, full_name, email, relationship")
+    .eq("child_id", id)
+    .eq("status", "pending")
+    .gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: true });
+
+  const parents = buildParentLinks(
+    (acceptedParents ?? []) as unknown as AcceptedParentRow[],
+    (pendingInvitations ?? []) as unknown as PendingParentRow[],
+  );
+
   return (
     <div className="flex min-h-screen bg-crema">
       <Sidebar />
@@ -64,7 +88,7 @@ export default async function KidProfilePage({
                 <SunIcon className="h-[18px] w-[18px]" />
                 Resumen del día
               </a>
-              <ParentsCard kidName={kid.name} initialParents={[]} />
+              <ParentsCard kidId={kid.id} kidName={kid.name} parents={parents} />
             </div>
           </div>
         </div>

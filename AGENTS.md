@@ -22,7 +22,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `spec-impl` — implements an approved spec (creates a branch named after the spec, only after its status is "Approved").
 - `supabase` — ANY task involving Supabase (auth, DB, RLS, migrations, debugging). Verify against current docs; re-check the changelog for breaking changes.
 - `supabase-postgres-best-practices` — load BEFORE writing/changing anything in Postgres (DDL, RLS, migrations, triggers, indexes).
-- `sepc-verifier` agent — verifies spec acceptance criteria: Playwright screenshots vs references for UI, y consultas SQL/advisors para specs de base de datos.
+- `spec-verifier` agent — verifies spec acceptance criteria: Playwright screenshots vs references for UI, Context7 para Next.js, y para specs de base de datos delega la auditoría en `db-security-auditor` + consultas SQL/advisors.
+- `db-security-auditor` agent — audita RLS, roles, policies, funciones y grants en Supabase para prevenir fugas de datos entre niños, padres y daycares. Solo lectura: reporta hallazgos con severidad y SQL de remediación propuesto, sin modificar nada. Invócalo con `@db-security-auditor` (o vía task) al revisar policies/migraciones o después de cambios de base de datos.
 
 ## Stack
 
@@ -44,5 +45,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The app is in Spanish (childcare screens: niños, avisos, feed). Match UI text and commit messages to that.
 - UI design source of truth: `references/pantallas/*.dc.html` (HTML mockups) and `references/screenshots/`. Build screens to match them.
 - Spec-driven: use the `spec` skill (specs saved to `specs/` — los de base de datos en `specs/database/` —, written in the same language as the request) and `spec-impl` (creates a git branch named after the spec, only after its status means "Approved").
-- Once a spec is implemented, verify it with the `sepc-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors; para specs de base de datos: consultas SQL y advisors), fixes code issues, and marks the checkboxes `[x]` in the spec.
+- Once a spec is implemented, verify it with the `spec-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors; para specs de base de datos: auditoría con `db-security-auditor` + consultas SQL y advisors), fixes code issues, and marks the checkboxes `[x]` in the spec.
 - `CLAUDE.md` just includes `AGENTS.md` — update this file for cross-agent instructions.

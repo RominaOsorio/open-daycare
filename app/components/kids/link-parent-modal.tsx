@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createInvitation } from "@/app/actions/invitations";
 import { InfoIcon, SendIcon, XIcon } from "@/app/components/icons";
 import {
-  buildParent,
   generateInviteCode,
   isValidEmail,
   RELATIONS,
@@ -13,10 +13,10 @@ import {
 
 interface LinkParentModalProps {
   open: boolean;
+  kidId: string;
   kidName: string;
   existingParents: ParentLink[];
   onClose: () => void;
-  onSend: (parent: ParentLink) => void;
 }
 
 const labelClass =
@@ -30,21 +30,25 @@ const chipClass =
 
 export function LinkParentModal({
   open,
+  kidId,
   kidName,
   existingParents,
   onClose,
-  onSend,
 }: LinkParentModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [relation, setRelation] = useState<Relation>("Mamá");
   const [code, setCode] = useState(() => generateInviteCode());
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const reset = useCallback(() => {
     setName("");
     setEmail("");
     setRelation("Mamá");
     setCode(generateInviteCode());
+    setSending(false);
+    setError(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -65,24 +69,42 @@ export function LinkParentModal({
 
   const duplicateEmail = existingParents.some(
     (parent) =>
+      parent.status === "activo" &&
       parent.email?.toLowerCase() === email.trim().toLowerCase(),
   );
   const valid =
-    name.trim().length > 0 && isValidEmail(email) && !duplicateEmail;
+    name.trim().length > 0 &&
+    isValidEmail(email) &&
+    !duplicateEmail &&
+    !sending;
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!valid) return;
-    const parent = buildParent(
-      { name, email, relation },
-      existingParents,
-    );
+    setSending(true);
+    setError(null);
+
+    const result = await createInvitation({
+      childId: kidId,
+      name,
+      email,
+      relation,
+      code,
+    });
+
+    if (!result.ok) {
+      setError(result.error);
+      if (result.regenerateCode) setCode(generateInviteCode());
+      setSending(false);
+      return;
+    }
+
     reset();
-    onSend(parent);
+    onClose();
   };
 
   return (
     <div
-            onClick={handleClose}
+      onClick={handleClose}
       className="fixed inset-0 z-50 flex items-start justify-center bg-[rgba(63,54,46,.4)] px-6 py-10"
     >
       <div
@@ -101,7 +123,7 @@ export function LinkParentModal({
           </div>
           <button
             type="button"
-      onClick={handleClose}
+            onClick={handleClose}
             aria-label="Cerrar"
             className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[10px] bg-[#F0E6D8] text-gris-oscuro"
           >
@@ -173,6 +195,12 @@ export function LinkParentModal({
             </div>
           </div>
 
+          {error && (
+            <p className="mb-4 text-center text-[13px] font-bold leading-snug text-rojo-oscuro">
+              {error}
+            </p>
+          )}
+
           <button
             type="button"
             onClick={handleSend}
@@ -180,7 +208,7 @@ export function LinkParentModal({
             className="flex w-full items-center justify-center gap-[9px] rounded-[14px] bg-gradient-to-b from-[#F4977E] to-[#EE8164] py-[14px] text-[15.5px] font-extrabold text-white shadow-[0_10px_22px_-8px_rgba(238,129,100,.7)] disabled:cursor-not-allowed disabled:opacity-55 disabled:shadow-none"
           >
             <SendIcon className="h-[19px] w-[19px]" />
-            Enviar invitación
+            {sending ? "Enviando…" : "Enviar invitación"}
           </button>
         </div>
       </div>

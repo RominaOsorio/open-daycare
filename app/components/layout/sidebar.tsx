@@ -24,6 +24,7 @@ export function Sidebar() {
   const name = profile?.full_name ?? USER.name;
   const role = profile ? ROLE_LABEL[profile.role] : USER.role;
   const initial = name.charAt(0).toUpperCase();
+  const canPost = profile?.role === "staff";
 
   async function handleLogout() {
     const supabase = createClient();
@@ -42,18 +43,22 @@ export function Sidebar() {
           <div className="font-display text-[17px] font-semibold leading-none text-tinta">
             OpenDayCare
           </div>
-          <div className="mt-0.5 text-[11.5px] text-gris">{ROOM.name}</div>
+          <div className="mt-0.5 text-[11.5px] text-gris">
+            {profile?.daycare_name ?? ROOM.name}
+          </div>
         </div>
       </a>
 
-      <button
-        type="button"
-        onClick={openModal}
-        className="mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-b from-[#F4977E] to-[#EE8164] py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,.75)]"
-      >
-        <PlusIcon className="h-[17px] w-[17px]" />
-        Nueva publicación
-      </button>
+      {canPost && (
+        <button
+          type="button"
+          onClick={openModal}
+          className="mb-4.5 flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-b from-[#F4977E] to-[#EE8164] py-3 text-[14.5px] font-extrabold text-white shadow-[0_8px_18px_-8px_rgba(238,129,100,.75)]"
+        >
+          <PlusIcon className="h-[17px] w-[17px]" />
+          Nueva publicación
+        </button>
+      )}
 
       <nav className="flex flex-1 flex-col gap-1">
         {NAV_ITEMS.map((item) => {

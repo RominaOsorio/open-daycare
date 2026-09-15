@@ -2,14 +2,14 @@
 
 App web de una guardería: el feed de publicaciones para las familias, la gestión de niños, los avisos de la sala y la cuenta del usuario.
 
-Construido con [Next.js 16](https://nextjs.org) (App Router), React 19, TypeScript y Tailwind CSS v4, con [Supabase](https://supabase.com) como backend (auth y Postgres).
+Construido con [Next.js 16](https://nextjs.org) (App Router), React 19, TypeScript y Tailwind CSS v4, con [Supabase](https://supabase.com) como backend (auth, Postgres y Storage).
 
 ## Stack
 
 - **Next.js 16.3.4** (App Router) + React 19 + TypeScript.
 - **Tailwind CSS v4** (CSS-first): la paleta vive en `app/globals.css` con `@theme`; no hay `tailwind.config.*`.
 - **Fuentes:** Fredoka y Nunito cargadas con `next/font/google` en `app/layout.tsx`.
-- **Supabase:** backend de auth y base de datos (Postgres + RLS). Esquema aplicado con migraciones versionadas en `supabase/migrations/`; referencia del schema en `07-DB-Schema/`.
+- **Supabase:** backend de auth, base de datos (Postgres + RLS) y Storage (bucket privado `post-photos` para las fotos del feed, servidas con signed URLs). Esquema aplicado con migraciones versionadas en `supabase/migrations/`; referencia del schema en `07-DB-Schema/`.
 - **Clientes Supabase:** la app interactúa con la base de datos usando los paquetes oficiales para Next.js — `@supabase/supabase-js` + `@supabase/ssr`. Los helpers viven en `utils/supabase/` (`server.ts`, `client.ts`, `middleware.ts`) y `proxy.ts` en la raíz refresca la sesión en cada request (Next 16 renombró `middleware` a `proxy`). Env vars: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en `.env.local`.
 - Alias de rutas: `@/*` apunta a la raíz del repo (no hay `src/`).
 
@@ -40,16 +40,17 @@ No hay framework de tests ni script de typecheck: `next build` es la verificaci�
 app/
   layout.tsx          # Layout raíz: fuentes, metadata, lang="es"
   globals.css         # Paleta del mockup en @theme + estilos base
-  page.tsx            # Home: feed de publicaciones (datos locales)
+  page.tsx            # Home: feed real de publicaciones desde Supabase
   login/              # Login real con Supabase Auth
-  activar-cuenta/     # Activación de cuenta (UI, sin backend todavía)
+  activar-cuenta/     # Activación real con código de invitación
   kids/               # Listado y perfil dinámico (/kids/[id])
-  lib/                # Datos y helpers (data.ts, kids.ts, kids-data.ts)
+  actions/            # Server actions (invitaciones, publicaciones)
+  lib/                # Datos y helpers (data.ts, kids.ts, kids-data.ts, posts.ts, image.ts)
   components/
     icons.tsx         # Iconos SVG inline
     ui/               # Piezas reutilizables (Avatar, Tag)
     layout/           # Sidebar, barra inferior de navegación
-    feed/             # Composer, divisor, tarjeta de post, acciones
+    feed/             # Feed, composer, modal de publicación con fotos
     kids/             # Listado, alta, perfil y vinculación de padres
     auth/             # Formularios de login y activación
     user/             # Perfil del usuario (UserProvider, saludo)
@@ -85,6 +86,9 @@ El desarrollo es spec-driven: cada funcionalidad se especifica en `specs/` (desc
 | 09 | Autenticación real y protección de rutas | Implementado |
 | 10 | DB + UI: salas y niños (`/kids`, `/kids/[id]`) | Implementado |
 | 11 | DB: vínculos `parent_children` e `invitations` (RLS) | Implementado |
+| 12 | Vincular padre: invitación por correo y activación con código | Implementado |
+| 13 | DB: `posts`, `post_children` y `post_photos` (RLS) | Implementado |
+| 14 | Publicar entradas del staff con o sin fotos | Implementado |
 
 Qué hace cada spec:
 
@@ -99,6 +103,9 @@ Qué hace cada spec:
 - **09 — Auth real:** login/logout con Supabase, protección de rutas en `proxy.ts` y perfil real en sidebar y saludo del home.
 - **10 — Salas y niños:** tablas `rooms`/`children` con RLS de staff; `/kids` lista desde Supabase, alta persistente y perfil real `/kids/[id]`.
 - **11 — Vínculos e invitaciones:** tablas `parent_children`/`invitations` con enums y RLS (staff de la guardería y lectura propia de padres); la UI de vinculación todavía no las usa.
+- **12 — Vincular padre por correo:** el modal crea la invitación real (server action), envía el código con Resend y `/activar-cuenta` registra al padre con Supabase Auth y acepta la invitación (RPC `accept_invitation`), incluido el caso hermanos y el consentimiento de fotos.
+- **13 — Tablas de publicaciones:** `posts`, `post_children` y `post_photos` con enum `post_type`, índices, helpers `security definer` y RLS de staff/padres (el feed del padre queda resuelto a nivel DB).
+- **14 — Publicar entradas con fotos:** el feed `/` y el modal de publicación se conectan a Supabase; el staff publica con o sin fotos (bucket privado + signed URLs, hasta 5, consentimiento de fotos bloqueado en UI y DB), con selector de sala, audiencia dirigida o "toda la sala" y limpieza de datos de prueba.
 
 ## Skills
 
@@ -110,13 +117,18 @@ npx skills@latest add Klerith/fernando-skills
 
 # Supabase (supabase + supabase-postgres-best-practices)
 npx skills add supabase/agent-skills
+
+# Entrevistas para afinar un plan o diseño antes del spec (grill-me)
+npx skills add https://github.com/mattpocock/skills --skill grill-me
 ```
 
 ## Roadmap
 
-- Conectar el feed a Supabase: `posts`, `post_children`, `post_photos`, `reactions` y `comments`.
-- UI de vinculación real de padres (modal → `invitations`) y activación de cuenta con código (`/activar-cuenta` → `parent_children`).
+- Edición/borrado de publicaciones, visor de foto a pantalla completa y detalle de publicación.
+- `reactions` y `comments` funcionales (likes y comentarios siguen en 0).
+- Rol Familia: UI dedicada del feed de padres (`familia-feed.dc.html`) y anuncios generales de guardería.
+- Hardening de `users`/signup (hallazgos Críticos preexistentes de la auditoría).
 - Pantallas restantes: Avisos, Mi cuenta, resumen del día y foto (hoy enlazan a `#`).
-- Rol Familia (feed del padre), `daily_summaries` y `devices` (push).
+- `daily_summaries` y `devices` (push).
 
-Auth y niños ya persisten en Supabase; el feed sigue con datos locales (`app/lib/data.ts`).
+Auth, niños, invitaciones y el feed ya persisten en Supabase; el mock del feed quedó reducido a fallbacks de login/sidebar (`app/lib/data.ts`).

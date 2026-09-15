@@ -110,6 +110,12 @@ Qué hace cada spec:
 - **13 — Tablas de publicaciones:** `posts`, `post_children` y `post_photos` con enum `post_type`, índices, helpers `security definer` y RLS de staff/padres (el feed del padre queda resuelto a nivel DB).
 - **14 — Publicar entradas con fotos:** el feed `/` y el modal de publicación se conectan a Supabase; el staff publica con o sin fotos (bucket privado + signed URLs, hasta 5, consentimiento de fotos bloqueado en UI y DB), con selector de sala, audiencia dirigida o "toda la sala" y limpieza de datos de prueba.
 
+Los changes de OpenSpec (`openspec/`) se gestionan con su CLI, que se instala globalmente:
+
+```bash
+npm install -g @fission-ai/openspec@latest
+```
+
 ## Skills
 
 Las skills locales (`.agents/skills/`) se instalan con `npx skills` y se trackean en `skills-lock.json`. Para refrescarlas:

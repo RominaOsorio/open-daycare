@@ -40,6 +40,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `npm run dev` — dev server; `npm run build` / `npm run start`; `npm run lint` (eslint).
 - No test framework or typecheck script is configured — `next build` is the closest full check.
 - `npx skills add supabase/agent-skills` (and `npx skills add klerith/fernando-skills`; `npx skills add https://github.com/mattpocock/skills --skill grill-me`) — refresh installed skills; `skills-lock.json` tracks them.
+- `npm install -g @fission-ai/openspec@latest` — instala la CLI de OpenSpec (flujo de changes en `openspec/`).
 
 ## Workflow
 
@@ -47,4 +48,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - UI design source of truth: `references/pantallas/*.dc.html` (HTML mockups) and `references/screenshots/`. Build screens to match them.
 - Spec-driven: use the `spec` skill (specs saved to `specs/` — los de base de datos en `specs/database/` —, written in the same language as the request) and `spec-impl` (creates a git branch named after the spec, only after its status means "Approved").
 - Once a spec is implemented, verify it with the `spec-verifier` agent: reads `specs/NN-slug.md`, checks each acceptance criterion (Playwright screenshots vs `references/screenshots/`, Context7, build/lint, console errors; para specs de base de datos: auditoría con `db-security-auditor` + consultas SQL y advisors), fixes code issues, and marks the checkboxes `[x]` in the spec.
+- OpenSpec: los changes nuevos se gestionan con la CLI (`npm install -g @fission-ai/openspec@latest`) y viven en `openspec/changes/` (proposal → specs → design → tasks); los specs principales quedan en `openspec/specs/` y los changes completados en `openspec/changes/archive/`. Comandos `/opsx-propose`, `/opsx-apply`, `/opsx-verify` y `/opsx-archive` (definidos en `.opencode/commands/`); el contexto del proyecto para los artefactos está en `openspec/config.yaml`.
 - `CLAUDE.md` just includes `AGENTS.md` — update this file for cross-agent instructions.

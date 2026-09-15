@@ -40,17 +40,17 @@ No hay framework de tests ni script de typecheck: `next build` es la verificaci�
 app/
   layout.tsx          # Layout raíz: fuentes, metadata, lang="es"
   globals.css         # Paleta del mockup en @theme + estilos base
-  page.tsx            # Home: feed real de publicaciones desde Supabase
+  (staff)/            # Panel del staff: shell + feed (/), niños (/kids, /kids/[id])
+  (family)/           # Área de familia: shell + feed (/familia)
   login/              # Login real con Supabase Auth
   activar-cuenta/     # Activación real con código de invitación
-  kids/               # Listado y perfil dinámico (/kids/[id])
   actions/            # Server actions (invitaciones, publicaciones)
-  lib/                # Datos y helpers (data.ts, kids.ts, kids-data.ts, posts.ts, image.ts)
+  lib/                # Datos y helpers (data.ts, dal.ts, composer-data.ts, posts.ts, …)
   components/
     icons.tsx         # Iconos SVG inline
     ui/               # Piezas reutilizables (Avatar, Tag)
-    layout/           # Sidebar, barra inferior de navegación
-    feed/             # Feed, composer, modal de publicación con fotos
+    layout/           # Sidebar y barra inferior de navegación (variantes staff | familia)
+    feed/             # Feed compartido (feed-screen), composer, modal de publicación con fotos
     kids/             # Listado, alta, perfil y vinculación de padres
     auth/             # Formularios de login y activación
     user/             # Perfil del usuario (UserProvider, saludo)
@@ -63,7 +63,10 @@ utils/
   supabase/           # Clientes Supabase (server, client, middleware)
 proxy.ts              # Refresca la sesión en cada request (Next 16)
 specs/                # Especificaciones (database/ para las de base de datos)
+openspec/             # Changes de OpenSpec (propuesta, specs, design y tasks)
 ```
+
+Las rutas se separan por rol con route groups: el panel del staff conserva `/`, `/kids` y `/kids/[id]`; la familia vive en `/familia`. Cada página valida el rol con el DAL (`app/lib/dal.ts`): un padre que entra al panel va a `/familia`, y staff/admin que entra a `/familia` vuelve a `/`.
 
 ## Diseño
 
@@ -107,6 +110,12 @@ Qué hace cada spec:
 - **13 — Tablas de publicaciones:** `posts`, `post_children` y `post_photos` con enum `post_type`, índices, helpers `security definer` y RLS de staff/padres (el feed del padre queda resuelto a nivel DB).
 - **14 — Publicar entradas con fotos:** el feed `/` y el modal de publicación se conectan a Supabase; el staff publica con o sin fotos (bucket privado + signed URLs, hasta 5, consentimiento de fotos bloqueado en UI y DB), con selector de sala, audiencia dirigida o "toda la sala" y limpieza de datos de prueba.
 
+Los changes de OpenSpec (`openspec/`) se gestionan con su CLI, que se instala globalmente:
+
+```bash
+npm install -g @fission-ai/openspec@latest
+```
+
 ## Skills
 
 Las skills locales (`.agents/skills/`) se instalan con `npx skills` y se trackean en `skills-lock.json`. Para refrescarlas:
@@ -126,7 +135,7 @@ npx skills add https://github.com/mattpocock/skills --skill grill-me
 
 - Edición/borrado de publicaciones, visor de foto a pantalla completa y detalle de publicación.
 - `reactions` y `comments` funcionales (likes y comentarios siguen en 0).
-- Rol Familia: UI dedicada del feed de padres (`familia-feed.dc.html`) y anuncios generales de guardería.
+- Rol Familia: UI dedicada del feed de padres (`familia-feed.dc.html`), con chips por hijo, tarjetas por niño y RLS para que el padre lea niños, salas y maestras (hoy `/familia` muestra el feed compartido).
 - Hardening de `users`/signup (hallazgos Críticos preexistentes de la auditoría).
 - Pantallas restantes: Avisos, Mi cuenta, resumen del día y foto (hoy enlazan a `#`).
 - `daily_summaries` y `devices` (push).

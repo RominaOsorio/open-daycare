@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
-import { Sidebar } from "@/app/components/layout/sidebar";
-import { BottomNav } from "@/app/components/layout/bottom-nav";
 import { KidsManager } from "@/app/components/kids/kids-manager";
+import { requireStaff } from "@/app/lib/dal";
 import {
   mapChildRow,
   sortRooms,
@@ -11,6 +10,7 @@ import {
 import { createClient } from "@/utils/supabase/server";
 
 export default async function KidsPage() {
+  await requireStaff();
   const supabase = createClient(await cookies());
   const [roomsRes, childrenRes] = await Promise.all([
     supabase.from("rooms").select("id, name"),
@@ -30,14 +30,8 @@ export default async function KidsPage() {
   );
 
   return (
-    <div className="flex min-h-screen bg-crema">
-      <Sidebar />
-      <BottomNav />
-      <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[880px] px-5 pb-24 pt-[34px] sm:px-10 lg:pb-20">
-          <KidsManager rooms={rooms} initialKids={kids} />
-        </div>
-      </main>
+    <div className="mx-auto w-full max-w-[880px] px-5 pb-24 pt-[34px] sm:px-10 lg:pb-20">
+      <KidsManager rooms={rooms} initialKids={kids} />
     </div>
   );
 }

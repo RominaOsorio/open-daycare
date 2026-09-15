@@ -1,37 +1,18 @@
 import { cookies } from "next/headers";
-import { Sidebar } from "@/app/components/layout/sidebar";
-import { BottomNav } from "@/app/components/layout/bottom-nav";
 import { ComposerCard } from "@/app/components/feed/composer-card";
 import { SectionDivider } from "@/app/components/feed/section-divider";
 import { PostList } from "@/app/components/feed/post-list";
-import { CreatePostProvider } from "@/app/components/feed/create-post-provider";
 import { HomeGreeting } from "@/app/components/user/home-greeting";
-import { AVATAR_PALETTE, sortRooms, type Room } from "@/app/lib/kids-data";
+import { getComposerData } from "@/app/lib/composer-data";
+import { getProfile } from "@/app/lib/dal";
 import {
   audienceLabelFromNames,
   formatTodayLabel,
   isPostTypeDb,
   POST_TYPE_TO_UI,
-  type ChildOption,
   type FeedPost,
-  type RoomOption,
 } from "@/app/lib/posts";
 import { createClient } from "@/utils/supabase/server";
-
-interface ProfileRow {
-  id: string;
-  full_name: string;
-  role: string;
-  daycare_id: string | null;
-  daycares: { name: string } | { name: string }[] | null;
-}
-
-interface ChildRow {
-  id: string;
-  full_name: string;
-  room_id: string;
-  photo_consent: boolean;
-}
 
 interface PostRow {
   id: string;
@@ -57,57 +38,12 @@ function embeddedOne<T>(value: T | T[] | null | undefined): T | null {
   return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
-export default async function Home() {
+export async function FeedScreen() {
   const supabase = createClient(await cookies());
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: profileData } = user
-    ? await supabase
-        .from("users")
-        .select("id, full_name, role, daycare_id, daycares(name)")
-        .eq("id", user.id)
-        .single()
-    : { data: null };
-  const profile = profileData as ProfileRow | null;
+  const profile = await getProfile();
   const isStaff = profile?.role === "staff" && profile?.daycare_id != null;
 
-  let rooms: RoomOption[] = [];
-  const childrenByRoom: Record<string, ChildOption[]> = {};
-  let childrenCount = 0;
-
-  if (isStaff) {
-    const [roomsRes, childrenRes] = await Promise.all([
-      supabase.from("rooms").select("id, name"),
-      supabase
-        .from("children")
-        .select("id, full_name, room_id, photo_consent")
-        .eq("status", "active")
-        .order("full_name"),
-    ]);
-
-    rooms = sortRooms((roomsRes.data ?? []) as Room[]).map((room) => ({
-      id: room.id,
-      name: room.name,
-    }));
-
-    const children = (childrenRes.data ?? []) as ChildRow[];
-    childrenCount = children.length;
-    children.forEach((child, index) => {
-      const palette = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
-      const bucket = childrenByRoom[child.room_id] ?? [];
-      bucket.push({
-        id: child.id,
-        name: child.full_name,
-        initial: child.full_name.trim().charAt(0).toUpperCase(),
-        avatarBg: palette.bg,
-        avatarColor: palette.color,
-        photoConsent: child.photo_consent,
-      });
-      childrenByRoom[child.room_id] = bucket;
-    });
-  }
+  const childrenCount = isStaff ? (await getComposerData()).childrenCount : 0;
 
   const { data: postsData } = await supabase
     .from("posts")
@@ -168,39 +104,28 @@ export default async function Home() {
     };
   });
 
-  const daycare = profile ? embeddedOne(profile.daycares) : null;
   const headerLabel =
-    isStaff && daycare ? daycare.name.toUpperCase() : "GUARDERÍA";
+    isStaff && profile?.daycare_name
+      ? profile.daycare_name.toUpperCase()
+      : "GUARDERÍA";
   const dateLabel = formatTodayLabel();
 
   return (
-    <CreatePostProvider
-      rooms={rooms}
-      childrenByRoom={childrenByRoom}
-      canPost={isStaff}
-    >
-      <div className="flex min-h-screen bg-crema">
-        <Sidebar />
-        <BottomNav />
-        <main className="min-w-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[760px] px-5 pb-24 pt-[34px] sm:px-10 lg:pb-20">
-            <div className="mb-6">
-              <div className="mb-1 text-[12.5px] font-extrabold tracking-[.8px] text-rojo">
-                {headerLabel}
-              </div>
-              <HomeGreeting />
-              <p className="m-0 mt-[5px] text-[14.5px] text-gris-oscuro">
-                {isStaff ? `${childrenCount} niños · ${dateLabel}` : dateLabel}
-              </p>
-            </div>
-
-            {isStaff && <ComposerCard />}
-            <SectionDivider />
-
-            <PostList posts={posts} />
-          </div>
-        </main>
+    <div className="mx-auto w-full max-w-[760px] px-5 pb-24 pt-[34px] sm:px-10 lg:pb-20">
+      <div className="mb-6">
+        <div className="mb-1 text-[12.5px] font-extrabold tracking-[.8px] text-rojo">
+          {headerLabel}
+        </div>
+        <HomeGreeting />
+        <p className="m-0 mt-[5px] text-[14.5px] text-gris-oscuro">
+          {isStaff ? `${childrenCount} niños · ${dateLabel}` : dateLabel}
+        </p>
       </div>
-    </CreatePostProvider>
+
+      {isStaff && <ComposerCard />}
+      <SectionDivider />
+
+      <PostList posts={posts} />
+    </div>
   );
 }

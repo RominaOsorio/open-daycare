@@ -1,7 +1,10 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { NAV_ITEMS } from "@/app/components/layout/nav-items";
+import {
+  FAMILY_NAV_ITEMS,
+  STAFF_NAV_ITEMS,
+} from "@/app/components/layout/nav-items";
 import { Avatar } from "@/app/components/ui/avatar";
 import { LogoutIcon, PlusIcon, SunIcon } from "@/app/components/icons";
 import { useCreatePost } from "@/app/components/feed/create-post-provider";
@@ -15,16 +18,19 @@ const ROLE_LABEL: Record<string, string> = {
   admin: "Admin",
 };
 
-export function Sidebar() {
+export function Sidebar({ variant }: { variant: "staff" | "family" }) {
   const pathname = usePathname();
   const router = useRouter();
   const { openModal } = useCreatePost();
   const { profile } = useUser();
 
+  const items = variant === "staff" ? STAFF_NAV_ITEMS : FAMILY_NAV_ITEMS;
   const name = profile?.full_name ?? USER.name;
   const role = profile ? ROLE_LABEL[profile.role] : USER.role;
   const initial = name.charAt(0).toUpperCase();
   const canPost = profile?.role === "staff";
+  const subtitle =
+    variant === "staff" ? profile?.daycare_name ?? ROOM.name : "Familia";
 
   async function handleLogout() {
     const supabase = createClient();
@@ -43,9 +49,7 @@ export function Sidebar() {
           <div className="font-display text-[17px] font-semibold leading-none text-tinta">
             OpenDayCare
           </div>
-          <div className="mt-0.5 text-[11.5px] text-gris">
-            {profile?.daycare_name ?? ROOM.name}
-          </div>
+          <div className="mt-0.5 text-[11.5px] text-gris">{subtitle}</div>
         </div>
       </a>
 
@@ -61,7 +65,7 @@ export function Sidebar() {
       )}
 
       <nav className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
           const active =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);

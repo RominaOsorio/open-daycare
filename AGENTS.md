@@ -19,6 +19,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Skills
 
 - `spec` — spec-driven development: create specs in `specs/` (in Spanish) before starting a feature. Specs relacionados con la base de datos (tablas, enums, migraciones, RLS, triggers) van en `specs/database/`.
+- `grill-me` — entrevista para afinar un plan o diseño antes de escribir el spec. Instalada con `npx skills add https://github.com/mattpocock/skills --skill grill-me`.
 - `spec-impl` — implements an approved spec (creates a branch named after the spec, only after its status is "Approved").
 - `supabase` — ANY task involving Supabase (auth, DB, RLS, migrations, debugging). Verify against current docs; re-check the changelog for breaking changes.
 - `supabase-postgres-best-practices` — load BEFORE writing/changing anything in Postgres (DDL, RLS, migrations, triggers, indexes).
@@ -31,14 +32,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Tailwind v4 is CSS-first: no `tailwind.config.*`; theme lives in `app/globals.css` (`@theme` / `@import "tailwindcss"`).
 - `@/*` path alias maps to the repo root (no `src/`).
 - Supabase (Postgres) backend: esquema aplicado con migraciones versionadas en `supabase/migrations/`; referencia en `07-DB-Schema/` (ver `opencode.json`). Client keys via `.env` (`SUPABASE_DB_PASSWORD`, etc.).
-- Tablas aplicadas en `public`: `daycares`, `users`, `rooms`, `children`, `parent_children` e `invitations` (RLS en todas). El resto del schema de referencia (`posts`, `daily_summaries`, …) llega en specs futuros.
+- Tablas aplicadas en `public`: `daycares`, `users`, `rooms`, `children`, `parent_children`, `invitations`, `posts`, `post_children` y `post_photos` (RLS en todas). El feed publica y lee de la DB; las fotos van a un bucket privado `post-photos` con signed URLs. El resto del schema de referencia (`reactions`, `comments`, `daily_summaries`, …) llega en specs futuros.
 - La app interactúa con Supabase usando los paquetes oficiales de Next.js: `@supabase/supabase-js` + `@supabase/ssr`. Clientes y helpers en `utils/supabase/` (`server.ts`, `client.ts`, `middleware.ts`) y `proxy.ts` en la raíz para refrescar la sesión (Next 16 renombró `middleware` a `proxy`). Env vars en `.env.local`: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
 ## Commands
 
 - `npm run dev` — dev server; `npm run build` / `npm run start`; `npm run lint` (eslint).
 - No test framework or typecheck script is configured — `next build` is the closest full check.
-- `npx skills add supabase/agent-skills` (and `npx skills add klerith/fernando-skills`) — refresh installed skills; `skills-lock.json` tracks them.
+- `npx skills add supabase/agent-skills` (and `npx skills add klerith/fernando-skills`; `npx skills add https://github.com/mattpocock/skills --skill grill-me`) — refresh installed skills; `skills-lock.json` tracks them.
 
 ## Workflow
 

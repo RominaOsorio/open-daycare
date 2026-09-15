@@ -16,6 +16,7 @@ export interface Profile {
   role: "staff" | "parent" | "admin";
   avatar_url: string | null;
   daycare_id: string | null;
+  daycare_name: string | null;
 }
 
 interface UserContextValue {
@@ -36,10 +37,22 @@ async function fetchProfile(
 ): Promise<Profile | null> {
   const { data } = await supabase
     .from("users")
-    .select("*")
+    .select("id, full_name, role, avatar_url, daycare_id, daycares(name)")
     .eq("id", user.id)
     .single();
-  return (data as Profile) ?? null;
+  if (!data) return null;
+  const row = data as Omit<Profile, "daycare_name"> & {
+    daycares: { name: string } | { name: string }[] | null;
+  };
+  const daycare = Array.isArray(row.daycares) ? row.daycares[0] : row.daycares;
+  return {
+    id: row.id,
+    full_name: row.full_name,
+    role: row.role,
+    avatar_url: row.avatar_url,
+    daycare_id: row.daycare_id,
+    daycare_name: daycare?.name ?? null,
+  };
 }
 
 export function UserProvider({ children }: { children: ReactNode }) {

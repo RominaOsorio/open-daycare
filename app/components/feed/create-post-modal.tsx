@@ -1,20 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ImageIcon, PlusIcon } from "@/app/components/icons";
 import {
-  audienceLabel,
-  nowTime,
-  type Post,
-  type PostType,
-  USER,
-} from "@/app/lib/data";
-import { KIDS } from "@/app/lib/kids";
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
+import { ImageIcon, PlusIcon, XIcon } from "@/app/components/icons";
+import { createPost } from "@/app/actions/posts";
+import { preparePhoto, type PreparedPhoto } from "@/app/lib/image";
+import { POST_TYPE_TO_DB, type PostType } from "@/app/lib/posts";
+import type { ChildOption, RoomOption } from "@/app/lib/posts";
 
 interface CreatePostModalProps {
-  open: boolean;
   onClose: () => void;
-  onPublish: (post: Post) => void;
+  rooms: RoomOption[];
+  childrenByRoom: Record<string, ChildOption[]>;
 }
 
 const labelClass =
@@ -36,70 +38,172 @@ const POST_TYPES: Array<{ type: PostType; label: string; color: string }> = [
   { type: "anuncio", label: "Anuncio", color: "bg-[#CCD8F4] text-[#4E72C8]" },
 ];
 
+const MAX_PHOTOS = 5;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+interface SelectedPhoto extends PreparedPhoto {
+  key: string;
+}
+
 export function CreatePostModal({
-  open,
   onClose,
-  onPublish,
+  rooms,
+  childrenByRoom,
 }: CreatePostModalProps) {
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+  const [roomId, setRoomId] = useState(() =>
+    rooms.length === 1 ? rooms[0].id : "",
+  );
+  const [selectedChildIds, setSelectedChildIds] = useState<string[]>([]);
   const [wholeRoom, setWholeRoom] = useState(false);
   const [type, setType] = useState<PostType | null>(null);
   const [text, setText] = useState("");
-  const [photo, setPhoto] = useState(false);
-
-  const reset = useCallback(() => {
-    setSelectedSlugs([]);
-    setWholeRoom(false);
-    setType(null);
-    setText("");
-    setPhoto(false);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    reset();
-    onClose();
-  }, [reset, onClose]);
+  const [photos, setPhotos] = useState<SelectedPhoto[]>([]);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const photosRef = useRef<SelectedPhoto[]>([]);
 
   useEffect(() => {
-    if (!open) return;
+    photosRef.current = photos;
+  }, [photos]);
+
+  useEffect(
+    () => () => {
+      photosRef.current.forEach((photo) =>
+        URL.revokeObjectURL(photo.previewUrl),
+      );
+    },
+    [],
+  );
+
+  const handleClose = useCallback(() => {
+    if (pending) return;
+    onClose();
+  }, [pending, onClose]);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, handleClose]);
+  }, [handleClose]);
 
-  if (!open) return null;
+  const roomChildren = roomId ? childrenByRoom[roomId] ?? [] : [];
+  const photosAttached = photos.length > 0;
+  const wholeRoomSelected =
+    roomChildren.length > 0 &&
+    (wholeRoom || selectedChildIds.length === roomChildren.length);
+  const excludedCount = photosAttached
+    ? roomChildren.filter((child) => !child.photoConsent).length
+    : 0;
 
-  const toggleKid = (slug: string) => {
-    const isRemoving = selectedSlugs.includes(slug);
-    if (!isRemoving) setWholeRoom(false);
-    setSelectedSlugs((current) =>
-      isRemoving
-        ? current.filter((s) => s !== slug)
-        : [...current, slug],
+  const toggleKid = (id: string) => {
+    setWholeRoom(false);
+    setSelectedChildIds((current) =>
+      current.includes(id)
+        ? current.filter((childId) => childId !== id)
+        : [...current, id],
     );
   };
 
-  const selectedKids = KIDS.filter((kid) => selectedSlugs.includes(kid.slug));
-  const valid =
-    (selectedSlugs.length > 0 || wholeRoom) && type !== null && text.trim().length > 0;
+  const handleFiles = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+    setError(null);
 
-  const handlePublish = () => {
+    const remaining = MAX_PHOTOS - photos.length;
+    if (remaining <= 0) {
+      setError(`Podés adjuntar hasta ${MAX_PHOTOS} fotos.`);
+      return;
+    }
+
+    const accepted: File[] = [];
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError("Solo se permiten imágenes JPG, PNG o WEBP.");
+        continue;
+      }
+      if (file.size > MAX_PHOTO_BYTES) {
+        setError("Cada foto puede pesar hasta 5 MB.");
+        continue;
+      }
+      accepted.push(file);
+    }
+    if (accepted.length === 0) return;
+
+    const toAdd = accepted.slice(0, remaining);
+    if (accepted.length > remaining) {
+      setError(`Podés adjuntar hasta ${MAX_PHOTOS} fotos.`);
+    }
+    const prepared = await Promise.all(toAdd.map(preparePhoto));
+    setPhotos((current) => [
+      ...current,
+      ...prepared.map((photo, index) => ({
+        ...photo,
+        key: `${Date.now()}-${index}-${Math.random()}`,
+      })),
+    ]);
+  };
+
+  const removePhoto = (key: string) => {
+    setPhotos((current) => {
+      const target = current.find((photo) => photo.key === key);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return current.filter((photo) => photo.key !== key);
+    });
+  };
+
+  const valid =
+    roomId !== "" &&
+    (wholeRoom || selectedChildIds.length > 0) &&
+    type !== null &&
+    text.trim().length > 0 &&
+    (type !== "foto" || photosAttached) &&
+    !pending;
+
+  const handlePublish = async () => {
     if (!valid || type === null) return;
-    const post: Post = {
-      id: String(Date.now()),
-      author: USER,
-      time: nowTime(),
-      type,
-      audience: audienceLabel(selectedKids, wholeRoom),
-      text: text.trim(),
-      photo: photo ? { label: "Foto" } : undefined,
-      likes: 0,
-      comments: 0,
-    };
-    reset();
-    onPublish(post);
+    setPending(true);
+    setError(null);
+
+    const formData = new FormData();
+    formData.set("type", POST_TYPE_TO_DB[type]);
+    formData.set("roomId", roomId);
+    if (wholeRoom) formData.set("wholeRoom", "1");
+    if (!wholeRoom) {
+      selectedChildIds.forEach((childId) =>
+        formData.append("childIds", childId),
+      );
+    }
+    formData.set("body", text.trim());
+    photos.forEach((photo, index) => {
+      formData.append(
+        "photos",
+        new File([photo.blob], `foto-${index + 1}.jpg`, {
+          type: photo.blob.type || "image/jpeg",
+        }),
+      );
+    });
+    formData.set(
+      "photoDims",
+      JSON.stringify(
+        photos.map((photo) => ({
+          width: photo.width,
+          height: photo.height,
+        })),
+      ),
+    );
+
+    const result = await createPost(formData);
+    if (!result.ok) {
+      setError(result.error ?? "No pudimos publicar. Intentá de nuevo.");
+      setPending(false);
+      return;
+    }
+    onClose();
   };
 
   return (
@@ -118,7 +222,8 @@ export function CreatePostModal({
           <button
             type="button"
             onClick={handleClose}
-            className="text-[15px] font-bold text-gris-oscuro"
+            disabled={pending}
+            className="text-[15px] font-bold text-gris-oscuro disabled:opacity-55"
           >
             Cancelar
           </button>
@@ -131,36 +236,71 @@ export function CreatePostModal({
             disabled={!valid}
             className="text-[15px] font-extrabold text-rojo disabled:cursor-not-allowed disabled:opacity-55"
           >
-            Publicar
+            {pending ? "Publicando…" : "Publicar"}
           </button>
         </div>
 
         <div className="px-[26px] py-6">
+          {rooms.length > 1 && (
+            <>
+              <div className={labelClass}>SALA</div>
+              <div className="mb-[22px] flex flex-wrap gap-[9px]">
+                {rooms.map((room) => (
+                  <button
+                    key={room.id}
+                    type="button"
+                    onClick={() => {
+                      setRoomId(room.id);
+                      setSelectedChildIds([]);
+                      setWholeRoom(false);
+                    }}
+                    className={`rounded-full border-[1.5px] px-4 py-2 text-[13.5px] font-extrabold ${
+                      roomId === room.id
+                        ? "border-tinta bg-tinta text-white"
+                        : "border-borde bg-tarjeta text-[#6E6359]"
+                    }`}
+                  >
+                    {room.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
           <div className={labelClass}>PARA</div>
           <div className="mb-[22px] flex flex-wrap gap-[9px]">
-            {KIDS.map((kid) => {
-              const selected = selectedSlugs.includes(kid.slug);
+            {roomChildren.map((child) => {
+              const selected = selectedChildIds.includes(child.id);
+              const disabled = photosAttached && !child.photoConsent;
               return (
                 <button
-                  key={kid.slug}
+                  key={child.id}
                   type="button"
-                  onClick={() => toggleKid(kid.slug)}
+                  onClick={() => toggleKid(child.id)}
+                  disabled={disabled}
+                  title={
+                    disabled
+                      ? "No autorizó fotos: no se puede etiquetar con imágenes"
+                      : undefined
+                  }
                   className={`${kidChipClass} ${
-                    selected
-                      ? "border-[1.5px] border-tinta bg-tinta text-white"
-                      : "border-[1.5px] border-borde bg-tarjeta text-[#6E6359]"
+                    disabled
+                      ? "cursor-not-allowed border-[1.5px] border-borde bg-crema opacity-50"
+                      : selected
+                        ? "border-[1.5px] border-tinta bg-tinta text-white"
+                        : "border-[1.5px] border-borde bg-tarjeta text-[#6E6359]"
                   }`}
                 >
                   <span
                     className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full font-display text-[13px] font-semibold"
                     style={{
-                      background: kid.avatarBg,
-                      color: kid.avatarColor,
+                      background: child.avatarBg,
+                      color: child.avatarColor,
                     }}
                   >
-                    {kid.initial}
+                    {child.initial}
                   </span>
-                  {kid.name.split(" ")[0]}
+                  {child.name.split(" ")[0]}
                 </button>
               );
             })}
@@ -168,12 +308,13 @@ export function CreatePostModal({
               type="button"
               onClick={() =>
                 setWholeRoom((current) => {
-                  if (!current) setSelectedSlugs([]);
+                  if (!current) setSelectedChildIds([]);
                   return !current;
                 })
               }
-              className={`rounded-full px-4 py-1.5 text-sm font-bold ${
-                wholeRoom || selectedSlugs.length === KIDS.length
+              disabled={roomChildren.length === 0}
+              className={`rounded-full px-4 py-1.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 ${
+                wholeRoomSelected
                   ? "border-[1.5px] border-tinta bg-tinta text-white"
                   : "border-[1.5px] border-borde bg-tarjeta text-[#6E6359]"
               }`}
@@ -181,6 +322,20 @@ export function CreatePostModal({
               Toda la sala
             </button>
           </div>
+
+          {roomId === "" && (
+            <p className="mb-[22px] -mt-3 text-[13px] text-gris">
+              Elegí una sala para ver a los niños.
+            </p>
+          )}
+
+          {photosAttached && excludedCount > 0 && wholeRoom && (
+            <p className="mb-[22px] -mt-3 text-[13px] font-bold text-naranja">
+              {excludedCount === 1
+                ? "1 familia no autorizó fotos: no verá esta publicación."
+                : `${excludedCount} familias no autorizaron fotos: no verán esta publicación.`}
+            </p>
+          )}
 
           <div className={labelClass}>TIPO</div>
           <div className="mb-[22px] flex flex-wrap gap-[9px]">
@@ -202,28 +357,67 @@ export function CreatePostModal({
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
+            maxLength={2000}
             placeholder="Contá cómo le fue hoy…"
             className="mb-[22px] min-h-[120px] w-full resize-y rounded-[14px] border-[1.5px] border-borde-input bg-white px-4 py-3.5 text-[15px] leading-[1.5] text-tinta placeholder:text-[#b6a99b] focus:outline-none"
           />
 
-          <div className={labelClass}>FOTOS</div>
-          <div className="flex gap-3">
-            {photo && (
-              <div className="flex h-24 w-24 flex-none items-center justify-center rounded-[14px] border border-borde bg-foto-fondo text-[#CBB89F]">
-                <ImageIcon className="h-[26px] w-[26px]" />
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => setPhoto(true)}
-              className="flex h-24 w-24 flex-none flex-col items-center justify-center gap-1.5 rounded-[14px] border-[1.5px] border-dashed border-foto-borde bg-foto-fondo text-foto-texto"
-            >
-              <span className="text-rojo-oscuro">
-                <PlusIcon className="h-[22px] w-[22px]" />
-              </span>
-              <span className="text-xs">Agregar</span>
-            </button>
+          <div className={labelClass}>
+            FOTOS{photos.length > 0 ? ` · ${photos.length}/${MAX_PHOTOS}` : ""}
           </div>
+          <div className="flex flex-wrap gap-3">
+            {photos.map((photo) => (
+              <div key={photo.key} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.previewUrl}
+                  alt="Foto seleccionada"
+                  className="h-24 w-24 flex-none rounded-[14px] border border-borde object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(photo.key)}
+                  title="Quitar foto"
+                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-tinta text-white"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex h-24 w-24 flex-none flex-col items-center justify-center gap-1.5 rounded-[14px] border-[1.5px] border-dashed border-foto-borde bg-foto-fondo text-foto-texto"
+              >
+                <span className="text-rojo-oscuro">
+                  <PlusIcon className="h-[22px] w-[22px]" />
+                </span>
+                <span className="text-xs">Agregar</span>
+              </button>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={handleFiles}
+            className="hidden"
+          />
+          {photosAttached && (
+            <p className="mt-2.5 flex items-center gap-1.5 text-[12.5px] text-gris">
+              <ImageIcon className="h-4 w-4" />
+              Los chips apagados no autorizaron fotos y no se pueden etiquetar
+              con imágenes.
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-4 rounded-[12px] bg-etiqueta-rosa px-4 py-3 text-[13.5px] font-bold text-etiqueta-rosa-texto">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>

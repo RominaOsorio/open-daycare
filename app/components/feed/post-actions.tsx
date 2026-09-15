@@ -3,9 +3,11 @@ import { CommentIcon, HeartIcon } from "@/app/components/icons";
 export function PostActions({
   likes,
   comments,
+  showEdit = false,
 }: {
   likes: number;
   comments: number;
+  showEdit?: boolean;
 }) {
   return (
     <div className="mt-4 flex items-center gap-4.5 border-t border-borde-claro pt-3.5">
@@ -21,9 +23,11 @@ export function PostActions({
         {comments}
       </a>
       <span className="flex-1" />
-      <a href="#" className="text-sm font-extrabold text-rojo-oscuro">
-        Editar
-      </a>
+      {showEdit && (
+        <a href="#" className="text-sm font-extrabold text-rojo-oscuro">
+          Editar
+        </a>
+      )}
     </div>
   );
 }

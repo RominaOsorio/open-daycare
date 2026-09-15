@@ -1,5 +1,12 @@
-import type { Author } from "@/app/lib/data";
 import { MegaphoneIcon } from "@/app/components/icons";
+
+export interface Author {
+  name: string;
+  initial: string;
+  avatarBg: string;
+  avatarColor: string;
+  icon?: "megaphone";
+}
 
 type AvatarProps = {
   author: Author;

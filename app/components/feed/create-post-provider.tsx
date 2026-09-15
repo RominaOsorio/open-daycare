@@ -1,16 +1,19 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
-import type { Post } from "@/app/lib/data";
-import { POSTS } from "@/app/lib/data";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 import { CreatePostModal } from "@/app/components/feed/create-post-modal";
+import type { ChildOption, RoomOption } from "@/app/lib/posts";
 
 interface CreatePostContextValue {
   open: boolean;
   openModal: () => void;
   closeModal: () => void;
-  posts: Post[];
-  addPost: (post: Post) => void;
 }
 
 const noop = () => {};
@@ -19,8 +22,6 @@ const defaultContext: CreatePostContextValue = {
   open: false,
   openModal: noop,
   closeModal: noop,
-  posts: [],
-  addPost: noop,
 };
 
 const CreatePostContext =
@@ -28,29 +29,32 @@ const CreatePostContext =
 
 export function CreatePostProvider({
   children,
+  rooms,
+  childrenByRoom,
+  canPost,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
+  rooms: RoomOption[];
+  childrenByRoom: Record<string, ChildOption[]>;
+  canPost: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [posts, setPosts] = useState<Post[]>(POSTS);
 
-  const openModal = useCallback(() => setOpen(true), []);
+  const openModal = useCallback(() => {
+    if (canPost) setOpen(true);
+  }, [canPost]);
   const closeModal = useCallback(() => setOpen(false), []);
-  const addPost = useCallback((post: Post) => {
-    setPosts((current) => [post, ...current]);
-    setOpen(false);
-  }, []);
 
   return (
-    <CreatePostContext.Provider
-      value={{ open, openModal, closeModal, posts, addPost }}
-    >
+    <CreatePostContext.Provider value={{ open, openModal, closeModal }}>
       {children}
-      <CreatePostModal
-        open={open}
-        onClose={closeModal}
-        onPublish={addPost}
-      />
+      {canPost && open && (
+        <CreatePostModal
+          onClose={closeModal}
+          rooms={rooms}
+          childrenByRoom={childrenByRoom}
+        />
+      )}
     </CreatePostContext.Provider>
   );
 }

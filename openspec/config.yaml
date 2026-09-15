@@ -1,0 +1,36 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+context: |
+  OpenDayCare es una app web para guarderías (daycares) que conecta al personal
+  con las familias: el personal publica en un feed avisos, actividades y logros
+  de los niños (con fotos), gestiona salas y perfiles de niños, e invita a los
+  padres a vincularse para seguir a su hijo.
+
+  Stack: Next.js 16 (App Router) + React 19 + TypeScript, Tailwind CSS v4,
+  Supabase (Postgres, Auth, Storage). UI en español; los mockups de
+  references/pantallas/ son la fuente de verdad del diseño. Trabajo spec-driven:
+  los specs viven en specs/ (los de base de datos en specs/database/).
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
